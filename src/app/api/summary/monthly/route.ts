@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     if (!year || !month) {
       return NextResponse.json(
         { error: "Year and month are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
         AND EXTRACT(MONTH FROM date) = $3
       GROUP BY milk_type
       `,
-      [user.userId, year, month]
+      [user.userId, year, month],
     );
 
     let cow_liters = 0;
@@ -75,15 +75,20 @@ export async function GET(req: Request) {
     const total_liters = cow_liters + buffalo_liters;
     const total_amount = cow_amount + buffalo_amount;
 
+    const cow_rate = cow_liters > 0 ? cow_amount / cow_liters : 0;
+    const buffalo_rate =
+      buffalo_liters > 0 ? buffalo_amount / buffalo_liters : 0;
+
     return NextResponse.json({
       cow_liters,
       buffalo_liters,
+      cow_rate,
+      buffalo_rate,
       cow_amount,
       buffalo_amount,
       total_liters,
       total_amount,
     });
-
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }

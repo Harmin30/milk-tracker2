@@ -9,6 +9,9 @@ type SummaryData = {
   buffalo_amount: number;
   total_liters: number;
   total_amount: number;
+
+  cow_rate: number;
+  buffalo_rate: number;
 };
 
 export default function Summary() {
@@ -105,8 +108,12 @@ export default function Summary() {
             <input
               type="month"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full border rounded-lg pl-10 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              onChange={(e) => {
+                setSelectedMonth(e.target.value);
+                setData(null);
+                setSearched(false);
+              }}
+              className="w-full border rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
@@ -161,7 +168,13 @@ export default function Summary() {
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <p className="text-sm text-gray-500">🐄 Cow Milk</p>
-                <p className="font-semibold">{data.cow_liters} L</p>
+
+                <div>
+                  <p className="font-semibold">{data.cow_liters} L</p>
+                  <p className="text-xs text-gray-400">
+                    ₹ {data.cow_rate ?? "-"} / L
+                  </p>
+                </div>
               </div>
 
               <p className="text-green-600 font-medium">₹ {data.cow_amount}</p>
@@ -172,7 +185,13 @@ export default function Summary() {
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <p className="text-sm text-gray-500">🐃 Buffalo Milk</p>
-                <p className="font-semibold">{data.buffalo_liters} L</p>
+
+                <div>
+                  <p className="font-semibold">{data.buffalo_liters} L</p>
+                  <p className="text-xs text-gray-400">
+                    ₹ {data.buffalo_rate ?? "-"} / L
+                  </p>
+                </div>
               </div>
 
               <p className="text-green-600 font-medium">

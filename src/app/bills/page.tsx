@@ -255,7 +255,7 @@ export default function BillsPage() {
           )}
 
           {type === "custom" && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* From Date */}
               <div className="space-y-1">
                 <label className="text-xs text-gray-500">From</label>
@@ -268,7 +268,7 @@ export default function BillsPage() {
                     value={fromDate}
                     max={today}
                     onChange={(e) => setFromDate(e.target.value)}
-                    className="w-full border rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function BillsPage() {
                     value={toDate}
                     max={today}
                     onChange={(e) => setToDate(e.target.value)}
-                    className="w-full border rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
