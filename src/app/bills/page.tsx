@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-
-
 type Bill = {
   id: string;
   bill_type: string;
@@ -205,8 +203,6 @@ export default function BillsPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-
-
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         <div>
           <h1 className="text-2xl font-semibold">Bills</h1>
@@ -245,32 +241,54 @@ export default function BillsPage() {
           </div>
 
           {type === "monthly" && (
-            <input
-              type="month"
-              value={selectedMonth}
-              max={currentMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full border rounded-lg px-3 py-3"
-            />
+            <div className="relative">
+              <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+              <input
+                type="month"
+                value={selectedMonth}
+                max={currentMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
           )}
 
           {type === "custom" && (
             <div className="grid grid-cols-2 gap-3">
-              <input
-                type="date"
-                value={fromDate}
-                max={today}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="border rounded-lg px-3 py-2"
-              />
+              {/* From Date */}
+              <div className="space-y-1">
+                <label className="text-xs text-gray-500">From</label>
 
-              <input
-                type="date"
-                value={toDate}
-                max={today}
-                onChange={(e) => setToDate(e.target.value)}
-                className="border rounded-lg px-3 py-2"
-              />
+                <div className="relative">
+                  <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+                  <input
+                    type="date"
+                    value={fromDate}
+                    max={today}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="w-full border rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* To Date */}
+              <div className="space-y-1">
+                <label className="text-xs text-gray-500">To</label>
+
+                <div className="relative">
+                  <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+                  <input
+                    type="date"
+                    value={toDate}
+                    max={today}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="w-full border rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -362,8 +380,6 @@ export default function BillsPage() {
           </div>
         </div>
       )}
-
-
     </div>
   );
 }

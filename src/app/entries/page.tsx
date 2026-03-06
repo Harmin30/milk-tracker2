@@ -2,7 +2,6 @@
 import { Suspense } from "react";
 import { useState, useEffect } from "react";
 
-
 import { useSearchParams, useRouter } from "next/navigation";
 
 function EntriesPage() {
@@ -183,8 +182,6 @@ function EntriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-
-
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         <h1 className="text-2xl font-semibold">
           {editMode ? "Update Milk Entry" : "Add Milk Entry"}
@@ -217,13 +214,18 @@ function EntriesPage() {
             {/* Date */}
             <div>
               <label className="text-sm text-gray-600">Date</label>
-              <input
-                type="date"
-                value={date}
-                max={today}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full border rounded-lg px-4 py-3 mt-1"
-              />
+
+              <div className="relative mt-1">
+                <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+                <input
+                  type="date"
+                  value={date}
+                  max={today}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"
+                />
+              </div>
             </div>
 
             {/* Milk Type */}
@@ -384,8 +386,6 @@ function EntriesPage() {
           </form>
         </div>
       </div>
-
-
     </div>
   );
 }

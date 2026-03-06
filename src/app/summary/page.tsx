@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-
-
 type SummaryData = {
   cow_liters: number;
   buffalo_liters: number;
@@ -18,6 +16,7 @@ export default function Summary() {
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   async function fetchSummary() {
     if (!selectedMonth) return;
@@ -25,6 +24,7 @@ export default function Summary() {
     const [year, month] = selectedMonth.split("-");
 
     setLoading(true);
+    setSearched(true);
 
     try {
       const res = await fetch(
@@ -84,8 +84,6 @@ export default function Summary() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-
-
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         {/* Page Title */}
 
@@ -101,12 +99,16 @@ export default function Summary() {
         <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
           <label className="text-sm text-gray-600">Select Month</label>
 
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="w-full border rounded-lg px-4 py-3"
-          />
+          <div className="relative">
+            <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full border rounded-lg pl-10 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
 
           <button
             onClick={fetchSummary}
@@ -126,7 +128,7 @@ export default function Summary() {
 
         {/* Empty State */}
 
-        {!loading && !data && selectedMonth && (
+        {!loading && !data && searched && (
           <div className="bg-white p-6 rounded-xl text-center shadow-sm">
             <p className="text-gray-500">No data available for this month</p>
           </div>
@@ -229,8 +231,6 @@ export default function Summary() {
           </div>
         </div>
       )}
-
-
     </div>
   );
 }

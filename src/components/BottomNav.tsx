@@ -24,9 +24,7 @@ export default function BottomNav() {
           <i className={`fa-solid ${icon} text-[15px]`}></i>
         </div>
 
-        <span className={`text-[9px] ${active ? "font-medium" : ""}`}>
-          {label}
-        </span>
+        <span className="text-[11px] font-bold">{label}</span>
       </Link>
     );
   };
@@ -36,7 +34,6 @@ export default function BottomNav() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-3 left-3 right-3 z-[999] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg">
         <div className="mx-auto grid max-w-4xl grid-cols-5 items-center px-3 py-1">
-
           {navItem("/dashboard", "Home", "fa-house")}
 
           {navItem("/records", "Records", "fa-file-lines")}
@@ -57,8 +54,8 @@ export default function BottomNav() {
             </div>
 
             <span
-              className={`text-[9px] font-semibold ${
-                path === "/entries" ? "text-blue-700" : "text-gray-600"
+              className={`text-[11px] font-bold ${
+                path === "/entries" ? "text-blue-700" : "text-gray-700"
               }`}
             >
               Add
@@ -68,7 +65,6 @@ export default function BottomNav() {
           {navItem("/summary", "Summary", "fa-chart-column")}
 
           {navItem("/bills", "Bills", "fa-file-invoice")}
-
         </div>
       </nav>
 
