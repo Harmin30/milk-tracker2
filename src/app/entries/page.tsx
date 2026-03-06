@@ -13,7 +13,7 @@ function EntriesPage() {
   const editId = params.get("id");
 
   const [date, setDate] = useState(today);
-  const [milkType, setMilkType] = useState("cow");
+  const [milkType, setMilkType] = useState("buffalo");
   const [liters, setLiters] = useState("");
   const [price, setPrice] = useState<string>("");
 
@@ -230,29 +230,35 @@ function EntriesPage() {
             <div>
               <label className="text-sm text-gray-600">Milk Type</label>
 
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setMilkType("cow")}
-                  className={`p-3 rounded-lg border transition ${
-                    milkType === "cow"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white"
-                  }`}
-                >
-                  🐄 Cow
-                </button>
-
+              <div className="flex gap-3 mt-2">
+                {/* Buffalo First */}
                 <button
                   type="button"
                   onClick={() => setMilkType("buffalo")}
-                  className={`p-3 rounded-lg border transition ${
-                    milkType === "buffalo"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition
+        ${
+          milkType === "buffalo"
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+        }`}
                 >
-                  🐃 Buffalo
+                  <span>🐃</span>
+                  Buffalo
+                </button>
+
+                {/* Cow Second */}
+                <button
+                  type="button"
+                  onClick={() => setMilkType("cow")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition
+        ${
+          milkType === "cow"
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+        }`}
+                >
+                  <span>🐄</span>
+                  Cow
                 </button>
               </div>
             </div>

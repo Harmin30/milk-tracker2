@@ -25,7 +25,7 @@ export default function Records() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 6;
+  const recordsPerPage = 5;
 
   async function loadRecords(page = 1) {
     try {
@@ -75,7 +75,6 @@ export default function Records() {
       setTimeout(() => {
         setSuccessMessage("");
       }, 2500);
-
     } catch (err) {
       setErrorMessage("Something went wrong while deleting");
     }
@@ -110,7 +109,6 @@ export default function Records() {
       <Header />
 
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
-
         <div>
           <h1 className="text-2xl font-semibold">Milk Records</h1>
 

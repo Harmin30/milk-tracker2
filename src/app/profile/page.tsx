@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import BottomNav from "../../components/BottomNav";
+import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const [name, setName] = useState("");
@@ -15,6 +16,16 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const router = useRouter();
+
+  async function logout() {
+    await fetch("/api/logout", {
+      method: "POST",
+    });
+
+    router.push("/login");
+  }
 
   // Load profile
   useEffect(() => {
@@ -115,29 +126,38 @@ export default function Profile() {
                 Personal Information
               </h2>
 
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Full Name"
-                className="w-full border rounded-lg px-4 py-3"
-              />
+              <div>
+                <label className="text-sm text-gray-600">Full Name</label>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                />
+              </div>
 
-              <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Address"
-                className="w-full border rounded-lg px-4 py-3"
-              />
+              <div>
+                <label className="text-sm text-gray-600">Address</label>
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Enter your address"
+                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                />
+              </div>
 
-              <input
-                type="tel"
-                maxLength={10}
-                pattern="[0-9]{10}"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="Mobile Number"
-                className="w-full border rounded-lg px-4 py-3"
-              />
+              <div>
+                <label className="text-sm text-gray-600">Mobile Number</label>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  placeholder="10 digit mobile number"
+                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                />
+              </div>
             </div>
 
             {/* MILK PRICES */}
@@ -146,40 +166,67 @@ export default function Profile() {
               <h2 className="font-semibold text-gray-700">Milk Pricing</h2>
 
               <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={cowPrice}
-                  onChange={(e) => setCowPrice(e.target.value)}
-                  placeholder="Cow Price / Liter"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
+                {/* Buffalo First */}
+                <div>
+                  <label className="text-sm text-gray-600 flex items-center gap-1">
+                    🐃 Buffalo Price
+                  </label>
 
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={buffaloPrice}
-                  onChange={(e) => setBuffaloPrice(e.target.value)}
-                  placeholder="Buffalo Price / Liter"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={buffaloPrice}
+                    onChange={(e) => setBuffaloPrice(e.target.value)}
+                    placeholder="Price / Liter"
+                    className="w-full border rounded-lg px-4 py-3 mt-1"
+                  />
+                </div>
+
+                {/* Cow Second */}
+                <div>
+                  <label className="text-sm text-gray-600 flex items-center gap-1">
+                    🐄 Cow Price
+                  </label>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={cowPrice}
+                    onChange={(e) => setCowPrice(e.target.value)}
+                    placeholder="Price / Liter"
+                    className="w-full border rounded-lg px-4 py-3 mt-1"
+                  />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                These prices are used as default when adding milk entries. The
-                price will automatically appear while entering milk records.
-              </p>
+
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg">
+                Default prices will automatically appear when adding milk
+                entries. You can still edit the price during entry if needed.
+              </div>
             </div>
 
             {/* SAVE BUTTON */}
 
             <button
               onClick={saveProfile}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium transition"
             >
               {saving ? "Saving..." : "Save Profile"}
             </button>
+
+            {/* LOGOUT */}
+
+            <div className="mt-6 mb-2">
+              <button
+                onClick={logout}
+                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 py-3 rounded-xl font-medium transition-all duration-200"
+              >
+                <i className="fa-solid fa-right-from-bracket"></i>
+                Logout
+              </button>
+            </div>
           </>
         )}
       </div>

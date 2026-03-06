@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import BottomNav from "../../components/BottomNav";
 
+
 type Entry = {
   id: string;
   milk_type: string;
@@ -84,66 +85,65 @@ export default function Dashboard() {
           <p className="text-sm text-gray-500">Overview of your milk records</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Cow Milk */}
-          <div className="bg-white rounded-2xl shadow-md p-4 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Cow Milk</p>
-
-              <p className="text-xl font-semibold mt-1">
-                {loading ? "..." : `${cowLiters} L`}
-              </p>
-            </div>
-
-            <div className="bg-blue-100 text-blue-600 p-3 rounded-xl">
-              <i className="fa-solid fa-cow text-lg"></i>
-            </div>
-          </div>
-
-          {/* Buffalo Milk */}
-          <div className="bg-white rounded-2xl shadow-md p-4 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Buffalo Milk</p>
-
-              <p className="text-xl font-semibold mt-1">
-                {loading ? "..." : `${buffaloLiters} L`}
-              </p>
-            </div>
-
-            <div className="bg-purple-100 text-purple-600 p-3 rounded-xl">
-              <i className="fa-solid fa-droplet text-lg"></i>
-            </div>
-          </div>
-        </div>
-
-        {/* Monthly Summary */}
+        {/* Monthly Milk Summary */}
         <div className="bg-white rounded-2xl shadow-md p-5">
+          {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-semibold text-gray-700">Monthly Summary</h2>
-
               <p className="text-xs text-gray-500">{monthLabel}</p>
             </div>
 
-            <i className="fa-solid fa-chart-column text-gray-400"></i>
+            <div className="bg-gray-100 text-gray-600 p-2 rounded-lg">
+              <i className="fa-solid fa-chart-column"></i>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <p className="text-gray-500">Total Milk</p>
+          {/* Milk Stats */}
+          <div className="space-y-3 text-sm">
+            {/* Buffalo */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="text-lg">🐃</span>
+                <span>Buffalo Milk</span>
+              </div>
 
-              <p className="font-semibold">
-                {loading ? "..." : `${totalMilk} L`}
-              </p>
+              <span className="font-semibold">
+                {loading ? "..." : `${buffaloLiters} L`}
+              </span>
             </div>
 
-            <div className="flex justify-between">
-              <p className="text-gray-500">Total Amount</p>
+            {/* Cow */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="text-lg">🐄</span>
+                <span>Cow Milk</span>
+              </div>
 
-              <p className="font-semibold text-green-600">
+              <span className="font-semibold">
+                {loading ? "..." : `${cowLiters} L`}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t pt-3 mt-3"></div>
+
+            {/* Total Milk */}
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Milk</span>
+
+              <span className="font-semibold">
+                {loading ? "..." : `${totalMilk} L`}
+              </span>
+            </div>
+
+            {/* Total Amount */}
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Amount</span>
+
+              <span className="font-semibold text-green-600">
                 {loading ? "..." : `₹${totalAmount}`}
-              </p>
+              </span>
             </div>
           </div>
         </div>
@@ -152,22 +152,16 @@ export default function Dashboard() {
         <div>
           <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
 
-          <div className="grid grid-cols-3 gap-4">
-            {/* Add Entry */}
+          {/* Primary action */}
+          <button
+            onClick={() => router.push("/entries")}
+            className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium mb-4 hover:bg-blue-700 transition"
+          >
+            <i className="fa-solid fa-plus mr-2"></i>
+            Add Milk Entry
+          </button>
 
-            <button
-              onClick={() => router.push("/entries")}
-              className="bg-white shadow-md rounded-xl p-4 text-center hover:shadow-lg transition"
-            >
-              <div className="text-blue-600 text-xl mb-2">
-                <i className="fa-solid fa-plus"></i>
-              </div>
-
-              <p className="text-sm font-medium">Add Entry</p>
-            </button>
-
-            {/* Records */}
-
+          <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => router.push("/records")}
               className="bg-white shadow-md rounded-xl p-4 text-center hover:shadow-lg transition"
@@ -178,8 +172,6 @@ export default function Dashboard() {
 
               <p className="text-sm font-medium">Records</p>
             </button>
-
-            {/* Bills */}
 
             <button
               onClick={() => router.push("/bills")}

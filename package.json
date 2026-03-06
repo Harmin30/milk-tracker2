@@ -13,6 +13,7 @@
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "fontkit": "^2.0.4",
+    "framer-motion": "^12.35.0",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
     "pdf-lib": "^1.17.1",
