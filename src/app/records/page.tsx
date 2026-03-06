@@ -37,7 +37,15 @@ export default function Records() {
     try {
       setLoading(true);
 
-      const res = await fetch(`/api/milk?page=${page}&limit=${recordsPerPage}`);
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(recordsPerPage),
+        searchDate,
+        milkType: milkFilter,
+        dateFilter,
+      });
+
+      const res = await fetch(`/api/milk?${params.toString()}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -52,8 +60,9 @@ export default function Records() {
   }
 
   useEffect(() => {
+    setCurrentPage(1);
     loadRecords(1);
-  }, []);
+  }, [searchDate, milkFilter, dateFilter]);
 
   async function confirmDelete(id: string) {
     setErrorMessage("");
@@ -126,47 +135,7 @@ export default function Records() {
     });
   }
 
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-
-  const filteredRecords = records.filter((r) => {
-    const entryDate = new Date(r.date);
-    const entryDateStr = r.date.split("T")[0];
-
-    // Search by exact date
-    if (searchDate && !entryDateStr.startsWith(searchDate)) {
-      return false;
-    }
-
-    // Milk type filter
-    if (milkFilter !== "all" && r.milk_type !== milkFilter) {
-      return false;
-    }
-
-    // Date quick filters
-    if (dateFilter === "today") {
-      if (entryDateStr !== todayStr) return false;
-    }
-
-    if (dateFilter === "week") {
-      const weekAgo = new Date();
-      weekAgo.setDate(today.getDate() - 7);
-      if (entryDate < weekAgo) return false;
-    }
-
-    if (dateFilter === "month") {
-      if (
-        entryDate.getMonth() !== today.getMonth() ||
-        entryDate.getFullYear() !== today.getFullYear()
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  const groupedRecords = filteredRecords.reduce(
+  const groupedRecords = records.reduce(
     (groups: Record<string, MilkEntry[]>, entry) => {
       const dateKey = entry.date.split("T")[0];
 
@@ -219,9 +188,8 @@ export default function Records() {
             </p>
 
             {/* DATE SEARCH */}
-            <div className="flex items-center gap-2">
-              {/* Date input with icon */}
-              <div className="relative flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[180px]">
                 <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
 
                 <input
@@ -232,7 +200,6 @@ export default function Records() {
                 />
               </div>
 
-              {/* Clear button */}
               {(searchDate || milkFilter !== "all" || dateFilter !== "all") && (
                 <button
                   onClick={() => {
@@ -240,7 +207,7 @@ export default function Records() {
                     setMilkFilter("all");
                     setDateFilter("all");
                   }}
-                  className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
                 >
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -332,7 +299,7 @@ export default function Records() {
 
           {/* RECORDS LIST */}
 
-          {filteredRecords.length === 0 ? (
+          {records.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-6 text-center">
               <i className="fa-solid fa-magnifying-glass text-gray-300 text-3xl mb-3"></i>
 

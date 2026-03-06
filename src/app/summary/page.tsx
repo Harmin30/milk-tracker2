@@ -104,9 +104,9 @@ export default function Summary() {
         <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
           <label className="text-sm text-gray-600">Select Month</label>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
             {/* Month selector */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-[170px]">
               <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
               <input
@@ -129,7 +129,7 @@ export default function Summary() {
                   setData(null);
                   setSearched(false);
                 }}
-                className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                className="flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>

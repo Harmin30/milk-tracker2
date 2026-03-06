@@ -241,8 +241,8 @@ export default function BillsPage() {
           </div>
 
           {type === "monthly" && (
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[170px]">
                 <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
                 <input
@@ -257,7 +257,7 @@ export default function BillsPage() {
               {selectedMonth && (
                 <button
                   onClick={() => setSelectedMonth("")}
-                  className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
                 >
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -268,59 +268,51 @@ export default function BillsPage() {
           {type === "custom" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* From Date */}
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500">From</label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative flex-1 min-w-[160px]">
+                  <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-
-                    <input
-                      type="date"
-                      value={fromDate}
-                      max={today}
-                      onChange={(e) => setFromDate(e.target.value)}
-                      className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
-
-                  {fromDate && (
-                    <button
-                      onClick={() => setFromDate("")}
-                      className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-300 transition"
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
-                  )}
+                  <input
+                    type="date"
+                    value={fromDate}
+                    max={today}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
                 </div>
+
+                {fromDate && (
+                  <button
+                    onClick={() => setFromDate("")}
+                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-300 transition"
+                  >
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                )}
               </div>
 
               {/* To Date */}
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500">To</label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative flex-1 min-w-[160px]">
+                  <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-
-                    <input
-                      type="date"
-                      value={toDate}
-                      max={today}
-                      onChange={(e) => setToDate(e.target.value)}
-                      className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
-
-                  {toDate && (
-                    <button
-                      onClick={() => setToDate("")}
-                      className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-300 transition"
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
-                  )}
+                  <input
+                    type="date"
+                    value={toDate}
+                    max={today}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="w-full border rounded-lg pl-10 pr-3 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
                 </div>
+
+                {toDate && (
+                  <button
+                    onClick={() => setToDate("")}
+                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-300 transition"
+                  >
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -157,7 +157,59 @@ export async function GET(req: Request) {
     const page = Number(searchParams.get("page") || 1);
     const limit = Number(searchParams.get("limit") || 6);
 
+    const searchDate = searchParams.get("searchDate");
+    const milkType = searchParams.get("milkType");
+    const dateFilter = searchParams.get("dateFilter");
+
     const offset = (page - 1) * limit;
+
+    let conditions = ["user_id = $1"];
+    let values: unknown[] = [user.userId];
+
+    /* DATE SEARCH */
+
+    if (searchDate) {
+      values.push(searchDate);
+      conditions.push(`DATE(date) = $${values.length}`);
+    }
+
+    /* MILK TYPE FILTER */
+
+    if (milkType && milkType !== "all") {
+      values.push(milkType);
+      conditions.push(`milk_type = $${values.length}`);
+    }
+
+    /* DATE QUICK FILTERS */
+
+    if (dateFilter === "today") {
+      conditions.push(`DATE(date) = CURRENT_DATE`);
+    }
+
+    if (dateFilter === "week") {
+      conditions.push(`date >= CURRENT_DATE - INTERVAL '7 days'`);
+    }
+
+    if (dateFilter === "month") {
+      conditions.push(`date >= DATE_TRUNC('month', CURRENT_DATE)`);
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    /* TOTAL COUNT */
+
+    const count = await pool.query(
+      `
+      SELECT COUNT(*)
+      FROM milk_entries
+      ${whereClause}
+      `,
+      values,
+    );
+
+    /* DATA QUERY */
+
+    const dataValues = [...values, limit, offset];
 
     const result = await pool.query(
       `
@@ -169,20 +221,12 @@ export async function GET(req: Request) {
       price_per_liter,
       total_amount
       FROM milk_entries
-      WHERE user_id = $1
+      ${whereClause}
       ORDER BY date DESC
-      LIMIT $2 OFFSET $3
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
       `,
-      [user.userId, limit, offset],
-    );
-
-    const count = await pool.query(
-      `
-      SELECT COUNT(*)
-      FROM milk_entries
-      WHERE user_id = $1
-      `,
-      [user.userId],
+      dataValues,
     );
 
     return NextResponse.json({
