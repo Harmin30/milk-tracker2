@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-
-
 type Entry = {
   id: string;
   milk_type: string;
@@ -17,7 +15,8 @@ export default function Dashboard() {
   const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [cowPrice, setCowPrice] = useState(0);
+  const [buffaloPrice, setBuffaloPrice] = useState(0);
   const [cowLiters, setCowLiters] = useState(0);
   const [buffaloLiters, setBuffaloLiters] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -30,6 +29,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
+    loadPrices();
   }, []);
 
   async function loadDashboard() {
@@ -71,12 +71,24 @@ export default function Dashboard() {
     setLoading(false);
   }
 
+  async function loadPrices() {
+    try {
+      const res = await fetch("/api/profile");
+      const data = await res.json();
+
+      if (res.ok && data.data) {
+        setCowPrice(data.data.default_cow_price || 0);
+        setBuffaloPrice(data.data.default_buffalo_price || 0);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const totalMilk = cowLiters + buffaloLiters;
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-
-
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         {/* Page Title */}
         <div>
@@ -103,8 +115,16 @@ export default function Dashboard() {
             {/* Buffalo */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-600">
-                <span className="text-lg">🐃</span>
-                <span>Buffalo Milk</span>
+                <div className="flex flex-col">
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">🐃</span>
+                    Buffalo Milk
+                  </span>
+
+                  <span className="text-xs text-gray-500">
+                    ₹{buffaloPrice}/L
+                  </span>
+                </div>
               </div>
 
               <span className="font-semibold">
@@ -115,8 +135,14 @@ export default function Dashboard() {
             {/* Cow */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-600">
-                <span className="text-lg">🐄</span>
-                <span>Cow Milk</span>
+                <div className="flex flex-col">
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">🐄</span>
+                    Cow Milk
+                  </span>
+
+                  <span className="text-xs text-gray-500">₹{cowPrice}/L</span>
+                </div>
               </div>
 
               <span className="font-semibold">
@@ -185,8 +211,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-
     </div>
   );
 }

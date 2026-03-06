@@ -12,6 +12,8 @@ type SummaryData = {
 
   cow_rate: number;
   buffalo_rate: number;
+  cow_rate_changed: boolean;
+  buffalo_rate_changed: boolean;
 };
 
 export default function Summary() {
@@ -172,7 +174,12 @@ export default function Summary() {
                 <div>
                   <p className="font-semibold">{data.cow_liters} L</p>
                   <p className="text-xs text-gray-400">
-                    ₹ {data.cow_rate ?? "-"} / L
+                    ₹ {Number(data.cow_rate).toFixed(2)} / L{" "}
+                    {data.cow_rate_changed && (
+                      <span className="text-[10px] text-orange-500 font-medium">
+                        (Avg)
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -189,7 +196,12 @@ export default function Summary() {
                 <div>
                   <p className="font-semibold">{data.buffalo_liters} L</p>
                   <p className="text-xs text-gray-400">
-                    ₹ {data.buffalo_rate ?? "-"} / L
+                    ₹ {Number(data.buffalo_rate).toFixed(2)} / L{" "}
+                    {data.buffalo_rate_changed && (
+                      <span className="text-[10px] text-orange-500 font-medium">
+                        (Avg)
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>

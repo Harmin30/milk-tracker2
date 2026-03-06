@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const { date, milk_type, liters, price_per_liter } = body;
+    const safeDate = date.split("T")[0];
 
     if (!date || !milk_type || liters === undefined) {
       return NextResponse.json(
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
 
     const todayString = new Date().toISOString().split("T")[0];
 
-    if (date > todayString) {
+    if (safeDate > todayString) {
       return NextResponse.json(
         { error: "Future date not allowed" },
         { status: 400 },
@@ -123,7 +124,14 @@ export async function POST(req: Request) {
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
       `,
-      [user.userId, date, milk_type, litersNumber, priceNumber, total_amount],
+      [
+        user.userId,
+        safeDate,
+        milk_type,
+        litersNumber,
+        priceNumber,
+        total_amount,
+      ],
     );
 
     return NextResponse.json({
@@ -153,7 +161,13 @@ export async function GET(req: Request) {
 
     const result = await pool.query(
       `
-      SELECT *
+      SELECT 
+      id,
+      date::text as date,
+      milk_type,
+      liters,
+      price_per_liter,
+      total_amount
       FROM milk_entries
       WHERE user_id = $1
       ORDER BY date DESC

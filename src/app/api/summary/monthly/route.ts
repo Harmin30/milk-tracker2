@@ -57,10 +57,23 @@ export async function GET(req: Request) {
       [user.userId, year, month],
     );
 
+    const rateResult = await pool.query(
+      `
+  SELECT milk_type, price_per_liter
+  FROM milk_entries
+  WHERE user_id = $1
+    AND EXTRACT(YEAR FROM date) = $2
+    AND EXTRACT(MONTH FROM date) = $3
+  `,
+      [user.userId, year, month],
+    );
+
     let cow_liters = 0;
     let buffalo_liters = 0;
     let cow_amount = 0;
     let buffalo_amount = 0;
+    const cowRates = new Set<number>();
+    const buffaloRates = new Set<number>();
 
     result.rows.forEach((row) => {
       if (row.milk_type === "cow") {
@@ -71,19 +84,45 @@ export async function GET(req: Request) {
         buffalo_amount = Number(row.total_amount);
       }
     });
+    rateResult.rows.forEach((row) => {
+      if (row.milk_type === "cow") {
+        cowRates.add(Number(row.price_per_liter));
+      } else if (row.milk_type === "buffalo") {
+        buffaloRates.add(Number(row.price_per_liter));
+      }
+    });
 
     const total_liters = cow_liters + buffalo_liters;
     const total_amount = cow_amount + buffalo_amount;
 
-    const cow_rate = cow_liters > 0 ? cow_amount / cow_liters : 0;
-    const buffalo_rate =
-      buffalo_liters > 0 ? buffalo_amount / buffalo_liters : 0;
+    let cow_rate = 0;
+    let buffalo_rate = 0;
 
+    let cow_rate_changed = false;
+    let buffalo_rate_changed = false;
+
+    // Cow rate logic
+    if (cowRates.size === 1) {
+      cow_rate = [...cowRates][0];
+    } else if (cowRates.size > 1 && cow_liters > 0) {
+      cow_rate = cow_amount / cow_liters;
+      cow_rate_changed = true;
+    }
+
+    // Buffalo rate logic
+    if (buffaloRates.size === 1) {
+      buffalo_rate = [...buffaloRates][0];
+    } else if (buffaloRates.size > 1 && buffalo_liters > 0) {
+      buffalo_rate = buffalo_amount / buffalo_liters;
+      buffalo_rate_changed = true;
+    }
     return NextResponse.json({
       cow_liters,
       buffalo_liters,
       cow_rate,
       buffalo_rate,
+      cow_rate_changed,
+      buffalo_rate_changed,
       cow_amount,
       buffalo_amount,
       total_liters,
