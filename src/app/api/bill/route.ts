@@ -110,15 +110,18 @@ export async function POST(req: NextRequest) {
     let buffaloAmount = 0;
 
     entries.forEach((e) => {
+      const liters = Number(e.liters);
+      const rate = Number(e.price_per_liter);
+      const amount = liters * rate;
+
       if (e.milk_type === "cow") {
-        cowLiters += Number(e.liters);
-        cowAmount += Number(e.total_amount);
+        cowLiters += liters;
+        cowAmount += amount;
       } else {
-        buffaloLiters += Number(e.liters);
-        buffaloAmount += Number(e.total_amount);
+        buffaloLiters += liters;
+        buffaloAmount += amount;
       }
     });
-
     const totalLiters = cowLiters + buffaloLiters;
     const totalAmount = cowAmount + buffaloAmount;
 
@@ -361,7 +364,7 @@ export async function POST(req: NextRequest) {
 
       const liters = Number(e.liters).toFixed(2);
       const rate = Number(e.price_per_liter).toFixed(2);
-      const amount = Number(e.total_amount).toFixed(2);
+      const amount = (Number(e.liters) * Number(e.price_per_liter)).toFixed(2);
 
       const rateText = `Rs. ${rate}`;
       const amountText = `Rs. ${amount}`;

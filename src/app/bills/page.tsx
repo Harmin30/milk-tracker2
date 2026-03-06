@@ -328,48 +328,72 @@ export default function BillsPage() {
         {/* BILL HISTORY */}
 
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Bill History</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <i className="fa-solid fa-file-invoice text-blue-600"></i>
+              Bill History
+            </h2>
+          </div>
 
           {loading && <p className="text-gray-500 text-sm">Loading bills...</p>}
 
           {!loading && bills.length === 0 && (
-            <div className="bg-white p-6 rounded-xl text-center shadow-sm">
+            <div className="bg-white p-6 rounded-xl text-center shadow-sm border border-gray-100">
+              <i className="fa-solid fa-receipt text-2xl text-gray-400 mb-2"></i>
               <p className="text-gray-500">No bills generated yet</p>
             </div>
           )}
 
           {bills.map((bill) => (
-            <div key={bill.id} className="bg-white p-4 rounded-xl shadow-sm">
+            <div
+              key={bill.id}
+              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition"
+            >
+              {/* Top Section */}
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold">
+                <div className="space-y-1">
+                  <p className="font-semibold flex items-center gap-2">
+                    <i className="fa-solid fa-calendar-days text-gray-400"></i>
+
                     {bill.bill_type === "monthly"
-                      ? `Monthly Bill (${bill.month}/${bill.year})`
-                      : "Custom Bill"}
+                      ? `Monthly Bill`
+                      : `Custom Bill`}
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    {formatDate(bill.from_date)} - {formatDate(bill.to_date)}
+                    {formatDate(bill.from_date)} — {formatDate(bill.to_date)}
                   </p>
+
+                  <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-md">
+                    {bill.bill_type === "monthly"
+                      ? `${bill.month}/${bill.year}`
+                      : "Custom Range"}
+                  </span>
                 </div>
 
-                <p className="text-green-600 font-semibold">
-                  ₹ {bill.total_amount}
-                </p>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Total</p>
+                  <p className="text-lg font-semibold text-green-600">
+                    ₹{bill.total_amount}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex gap-3 mt-3">
+              {/* Buttons */}
+              <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => downloadExistingBill(bill)}
-                  className="flex-1 border border-blue-500 text-blue-600 py-2 rounded-lg text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 border border-blue-500 text-blue-600 py-2 rounded-lg text-sm hover:bg-blue-50 transition"
                 >
+                  <i className="fa-solid fa-download"></i>
                   Download
                 </button>
 
                 <button
                   onClick={() => setDeleteId(bill.id)}
-                  className="flex-1 border border-red-500 text-red-600 py-2 rounded-lg text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 border border-red-500 text-red-600 py-2 rounded-lg text-sm hover:bg-red-50 transition"
                 >
+                  <i className="fa-solid fa-trash"></i>
                   Delete
                 </button>
               </div>
