@@ -104,19 +104,36 @@ export default function Summary() {
         <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
           <label className="text-sm text-gray-600">Select Month</label>
 
-          <div className="relative">
-            <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <div className="flex items-center gap-2">
+            {/* Month selector */}
+            <div className="relative flex-1">
+              <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(e) => {
-                setSelectedMonth(e.target.value);
-                setData(null);
-                setSearched(false);
-              }}
-              className="w-full border rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+              <input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => {
+                  setSelectedMonth(e.target.value);
+                  setData(null);
+                  setSearched(false);
+                }}
+                className="w-full border rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            {/* Clear button */}
+            {selectedMonth && (
+              <button
+                onClick={() => {
+                  setSelectedMonth("");
+                  setData(null);
+                  setSearched(false);
+                }}
+                className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            )}
           </div>
 
           <button

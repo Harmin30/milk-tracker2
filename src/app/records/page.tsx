@@ -220,13 +220,19 @@ export default function Records() {
 
             {/* DATE SEARCH */}
             <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={searchDate}
-                onChange={(e) => setSearchDate(e.target.value)}
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
+              {/* Date input with icon */}
+              <div className="relative flex-1">
+                <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
 
+                <input
+                  type="date"
+                  value={searchDate}
+                  onChange={(e) => setSearchDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                />
+              </div>
+
+              {/* Clear button */}
               {(searchDate || milkFilter !== "all" || dateFilter !== "all") && (
                 <button
                   onClick={() => {
@@ -234,9 +240,9 @@ export default function Records() {
                     setMilkFilter("all");
                     setDateFilter("all");
                   }}
-                  className="text-sm text-gray-500 hover:text-red-500"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
                 >
-                  ✕
+                  <i className="fa-solid fa-xmark"></i>
                 </button>
               )}
             </div>
