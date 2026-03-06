@@ -44,16 +44,16 @@ export async function GET(req: Request) {
 
     const result = await pool.query(
       `
-      SELECT
-        milk_type,
-        SUM(liters) as total_liters,
-        SUM(total_amount) as total_amount
-      FROM milk_entries
-      WHERE user_id = $1
-        AND EXTRACT(YEAR FROM date) = $2
-        AND EXTRACT(MONTH FROM date) = $3
-      GROUP BY milk_type
-      `,
+  SELECT
+    milk_type,
+    SUM(liters) as total_liters,
+    SUM(liters * price_per_liter) as total_amount
+  FROM milk_entries
+  WHERE user_id = $1
+    AND EXTRACT(YEAR FROM date) = $2
+    AND EXTRACT(MONTH FROM date) = $3
+  GROUP BY milk_type
+  `,
       [user.userId, year, month],
     );
 
@@ -78,10 +78,10 @@ export async function GET(req: Request) {
     result.rows.forEach((row) => {
       if (row.milk_type === "cow") {
         cow_liters = Number(row.total_liters);
-        cow_amount = Number(row.total_amount);
+        cow_amount = parseFloat(row.total_amount);
       } else if (row.milk_type === "buffalo") {
         buffalo_liters = Number(row.total_liters);
-        buffalo_amount = Number(row.total_amount);
+        buffalo_amount = parseFloat(row.total_amount);
       }
     });
     rateResult.rows.forEach((row) => {
