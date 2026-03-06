@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
-import BottomNav from "../../components/BottomNav";
+
 
 type MilkEntry = {
   id: string;
@@ -25,7 +25,7 @@ export default function Records() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 5;
+  const recordsPerPage = 6;
 
   async function loadRecords(page = 1) {
     try {
@@ -267,7 +267,7 @@ export default function Records() {
         </div>
       )}
 
-      <BottomNav />
+
     </div>
   );
 }

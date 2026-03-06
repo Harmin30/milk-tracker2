@@ -12,13 +12,17 @@ export default function BottomNav() {
     return (
       <Link
         href={href}
-        className={`flex flex-col items-center justify-center text-xs py-1 rounded-lg transition-all duration-200 ${
-          active
-            ? "bg-blue-50 text-blue-600"
-            : "text-gray-500 hover:text-blue-500"
+        className={`flex flex-col items-center justify-center gap-[3px] transition-all duration-200 ${
+          active ? "text-blue-600" : "text-gray-500 hover:text-blue-500"
         }`}
       >
-        <i className={`fa-solid ${icon} text-[18px] mb-[2px]`}></i>
+        <div
+          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${
+            active ? "bg-blue-50 scale-110" : ""
+          }`}
+        >
+          <i className={`fa-solid ${icon} text-[17px]`}></i>
+        </div>
 
         <span className={`text-[11px] ${active ? "font-medium" : ""}`}>
           {label}
@@ -30,21 +34,44 @@ export default function BottomNav() {
   return (
     <>
       {/* Bottom Navigation */}
-
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-t border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto grid grid-cols-6 gap-1 px-2 py-1.5">
+      <nav className="fixed bottom-3 left-3 right-3 z-[999] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg">
+        <div className="mx-auto grid max-w-4xl grid-cols-5 items-center px-3 py-2">
           {navItem("/dashboard", "Home", "fa-house")}
-          {navItem("/entries", "Add", "fa-plus")}
+
           {navItem("/records", "Records", "fa-file-lines")}
+
+          {/* CENTER ADD BUTTON */}
+          <Link
+            href="/entries"
+            className="flex flex-col items-center justify-center gap-[3px]"
+          >
+            <div
+              className={`flex items-center justify-center w-12 h-12 rounded-full shadow-md transition-all duration-200 ${
+                path === "/entries"
+                  ? "bg-blue-700 text-white scale-110"
+                  : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+              }`}
+            >
+              <i className="fa-solid fa-plus text-[18px]"></i>
+            </div>
+
+            <span
+              className={`text-[11px] font-semibold transition ${
+                path === "/entries" ? "text-blue-700" : "text-gray-600"
+              }`}
+            >
+              Add
+            </span>
+          </Link>
+
           {navItem("/summary", "Summary", "fa-chart-column")}
+
           {navItem("/bills", "Bills", "fa-file-invoice")}
-          {navItem("/profile", "Profile", "fa-user")}
         </div>
-      </div>
+      </nav>
 
-      {/* Spacer to prevent content overlap */}
-
-      <div className="h-16"></div>
+      {/* Spacer so content doesn't hide behind nav */}
+      <div className="h-[80px]" />
     </>
   );
 }

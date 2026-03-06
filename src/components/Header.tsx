@@ -55,11 +55,10 @@ export default function Header() {
   const initial = name ? name.charAt(0).toUpperCase() : "U";
 
   return (
-    <div className="w-full bg-white/90 backdrop-blur border-b border-gray-200 sticky top-0 z-40">
-      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="w-full sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
+      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
             <i className="fa-solid fa-glass-water text-sm"></i>
           </div>
@@ -70,31 +69,27 @@ export default function Header() {
         </div>
 
         {/* Profile */}
-
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2"
           >
             {/* Avatar */}
-
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-semibold hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-semibold shadow-sm transition hover:scale-105">
               {initial}
             </div>
 
             {/* Arrow */}
-
             <i
-              className={`fa-solid fa-chevron-down text-xs text-gray-400 transition-transform ${
+              className={`fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200 ${
                 menuOpen ? "rotate-180" : ""
               }`}
             ></i>
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-3 w-52 bg-white border border-gray-200 rounded-xl shadow-lg ring-1 ring-gray-100 overflow-hidden">
+            <div className="absolute right-0 mt-3 w-52 bg-white border border-gray-200 rounded-xl shadow-lg ring-1 ring-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
               {/* User Info */}
-
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-sm font-semibold text-gray-800">
                   {name || "User"}
@@ -104,7 +99,6 @@ export default function Header() {
               </div>
 
               {/* Profile */}
-
               <button
                 onClick={() => {
                   setMenuOpen(false);
@@ -119,7 +113,6 @@ export default function Header() {
               <div className="border-t"></div>
 
               {/* Logout */}
-
               <button
                 onClick={logout}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
@@ -131,6 +124,6 @@ export default function Header() {
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 }

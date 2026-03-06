@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Header from "../../components/Header";
-import BottomNav from "../../components/BottomNav";
+
 
 type SummaryData = {
   cow_liters: number;
@@ -230,7 +230,7 @@ export default function Summary() {
         </div>
       )}
 
-      <BottomNav />
+
     </div>
   );
 }

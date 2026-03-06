@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
-import BottomNav from "../../components/BottomNav";
 
 
 type Entry = {
@@ -187,7 +186,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <BottomNav />
+
     </div>
   );
 }

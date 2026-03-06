@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import BottomNav from "../../components/BottomNav";
+
 
 type Bill = {
   id: string;
@@ -363,7 +363,7 @@ export default function BillsPage() {
         </div>
       )}
 
-      <BottomNav />
+
     </div>
   );
 }

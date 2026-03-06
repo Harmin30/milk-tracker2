@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import Header from "../../components/Header";
-import BottomNav from "../../components/BottomNav";
+
 import { useSearchParams, useRouter } from "next/navigation";
 
 function EntriesPage() {
@@ -385,7 +385,7 @@ function EntriesPage() {
         </div>
       </div>
 
-      <BottomNav />
+
     </div>
   );
 }
