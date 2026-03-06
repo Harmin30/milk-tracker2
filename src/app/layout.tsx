@@ -1,6 +1,6 @@
 import "./globals.css";
 import PageTransition from "../components/PageTransition";
-import BottomNav from "../components/BottomNav";
+import AppShell from "../components/AppShell";
 
 export const metadata = {
   title: "Milk Tracker",
@@ -22,15 +22,9 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-screen flex flex-col bg-gray-50">
-
-        {/* Page Content */}
-        <main className="flex-1">
+        <AppShell>
           <PageTransition>{children}</PageTransition>
-        </main>
-
-        {/* Bottom Navigation */}
-        <BottomNav />
-
+        </AppShell>
       </body>
     </html>
   );

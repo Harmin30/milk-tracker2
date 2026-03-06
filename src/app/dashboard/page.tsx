@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "../../components/Header";
+
 
 
 type Entry = {
@@ -75,7 +75,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-      <Header />
+
 
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         {/* Page Title */}
