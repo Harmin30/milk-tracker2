@@ -55,15 +55,15 @@ export default function Header() {
   const initial = name ? name.charAt(0).toUpperCase() : "U";
 
   return (
-    <header className="w-full sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
-      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="w-full sticky top-0 z-40 border-b border-gray-200 bg-white/40 backdrop-blur-xl shadow-sm">
+      <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center border border-blue-400 shadow-sm hover:shadow-md transition">
             <i className="fa-solid fa-glass-water text-sm"></i>
           </div>
 
-          <span className="font-semibold text-gray-800 text-[17px]">
+          <span className="font-bold text-gray-800 text-lg tracking-tight">
             Milk Tracker
           </span>
         </div>
@@ -72,30 +72,30 @@ export default function Header() {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-3 hover:opacity-75 transition"
           >
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-semibold shadow-sm transition hover:scale-105">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-md transition hover:shadow-lg hover:scale-110">
               {initial}
             </div>
 
             {/* Arrow */}
             <i
-              className={`fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200 ${
+              className={`fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-200 ${
                 menuOpen ? "rotate-180" : ""
               }`}
             ></i>
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-3 w-52 bg-white border border-gray-200 rounded-xl shadow-lg ring-1 ring-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
               {/* User Info */}
-              <div className="px-4 py-3 border-b bg-gray-50">
-                <p className="text-sm font-semibold text-gray-800">
+              <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <p className="text-sm font-bold text-gray-800">
                   {name || "User"}
                 </p>
 
-                <p className="text-xs text-gray-500">Milk Tracker Account</p>
+                <p className="text-xs text-gray-500 mt-0.5">Account Settings</p>
               </div>
 
               {/* Profile */}
@@ -104,21 +104,19 @@ export default function Header() {
                   setMenuOpen(false);
                   router.push("/profile");
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 transition border-b border-gray-100"
               >
-                <i className="fa-solid fa-user text-gray-400"></i>
-                Profile
+                <i className="fa-solid fa-user text-blue-500 w-5 text-center"></i>
+                <span>Profile Settings</span>
               </button>
-
-              <div className="border-t"></div>
 
               {/* Logout */}
               <button
                 onClick={logout}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+                className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition"
               >
-                <i className="fa-solid fa-right-from-bracket"></i>
-                Logout
+                <i className="fa-solid fa-right-from-bracket text-red-500 w-5 text-center"></i>
+                <span>Logout</span>
               </button>
             </div>
           )}

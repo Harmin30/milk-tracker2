@@ -19,12 +19,23 @@ function EntriesPage() {
   const [cowPrice, setCowPrice] = useState(0);
   const [buffaloPrice, setBuffaloPrice] = useState(0);
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [toast, setToast] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<
+    "success" | "error" | "warning"
+  >("success");
 
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+
+  // Auto-dismiss success messages after 3 seconds
+  useEffect(() => {
+    if (messageType === "success" && message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, messageType]);
 
   // Load profile prices
   useEffect(() => {
@@ -103,29 +114,32 @@ function EntriesPage() {
     e.preventDefault();
 
     setLoading(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    setMessage("");
 
     if (!liters || Number(liters) <= 0) {
-      setErrorMessage("Please enter a valid milk quantity");
+      setMessage("Please enter a valid milk quantity");
+      setMessageType("error");
       setLoading(false);
       return;
     }
 
     if (!price || Number(price) <= 0) {
-      setErrorMessage("Please enter a valid price per liter");
+      setMessage("Please enter a valid price per liter");
+      setMessageType("error");
       setLoading(false);
       return;
     }
 
     if (date > today) {
-      setErrorMessage("Future date is not allowed");
+      setMessage("Future date is not allowed");
+      setMessageType("error");
       setLoading(false);
       return;
     }
 
     if (Number(price) <= 0) {
-      setErrorMessage("Price must be greater than 0");
+      setMessage("Price must be greater than 0");
+      setMessageType("error");
       setLoading(false);
       return;
     }
@@ -161,44 +175,40 @@ function EntriesPage() {
 
       if (!res.ok) {
         if (data.error) {
-          setErrorMessage(data.error);
+          setMessage(data.error);
         } else {
-          setErrorMessage("Something went wrong. Please try again.");
+          setMessage("Something went wrong. Please try again.");
         }
+        setMessageType("error");
 
         setLoading(false);
         return;
       }
 
       if (editMode) {
-        setToast("Entry updated");
+        setMessage("Entry updated successfully");
+        setMessageType("success");
         window.scrollTo({
           top: 0,
           behavior: "smooth",
         });
 
         setTimeout(() => {
-          setToast("");
-        }, 2500);
-
-        setTimeout(() => {
           router.push("/records");
-        }, 1000);
+        }, 1500);
       } else {
-        setToast("Milk entry saved");
+        setMessage("Milk entry saved successfully");
+        setMessageType("success");
         window.scrollTo({
           top: 0,
           behavior: "smooth",
         });
 
         setLiters("");
-
-        setTimeout(() => {
-          setToast("");
-        }, 2500);
       }
     } catch (err) {
-      setErrorMessage("Something went wrong");
+      setMessage("Something went wrong");
+      setMessageType("error");
     }
 
     setLoading(false);
@@ -206,15 +216,26 @@ function EntriesPage() {
 
   return (
     <>
-      {toast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-white border border-green-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
-            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 text-xs">
-              ✔
-            </div>
-
-            <span className="text-gray-700 font-medium">{toast}</span>
-          </div>
+      {message && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 shadow-lg ${
+            messageType === "success"
+              ? "bg-green-50 border-green-300 text-green-700"
+              : messageType === "error"
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-yellow-50 border-yellow-300 text-yellow-700"
+          }`}
+        >
+          {messageType === "success" && (
+            <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+          )}
+          {messageType === "error" && (
+            <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+          )}
+          {messageType === "warning" && (
+            <i className="fa-solid fa-triangle-exclamation text-lg flex-shrink-0"></i>
+          )}
+          <span>{message}</span>
         </div>
       )}
 
@@ -229,12 +250,6 @@ function EntriesPage() {
               <p className="text-sm text-gray-500">
                 Editing entry • {liters} L {milkType}
               </p>
-            </div>
-          )}
-
-          {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
-              {errorMessage}
             </div>
           )}
 
@@ -324,27 +339,31 @@ function EntriesPage() {
 
                       if (val === "") {
                         setLiters("");
+                        setMessage("");
                         return;
                       }
 
                       const num = Number(val);
 
                       if (isNaN(num)) {
-                        setErrorMessage("Liters must be a valid number");
+                        setMessage("Liters must be a valid number");
+                        setMessageType("error");
                         return;
                       }
 
                       if (num <= 0) {
-                        setErrorMessage("Liters must be greater than 0");
+                        setMessage("Liters must be greater than 0");
+                        setMessageType("error");
                         return;
                       }
 
-                      if (num > 1000) {
-                        setErrorMessage("Liters value seems too large");
+                      if (num > 100) {
+                        setMessage("Cannot exceed 100 liters per entry");
+                        setMessageType("error");
                         return;
                       }
 
-                      setErrorMessage("");
+                      setMessage("");
                       setLiters(val);
                     }}
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
@@ -386,27 +405,31 @@ function EntriesPage() {
 
                     if (val === "") {
                       setPrice("");
+                      setMessage("");
                       return;
                     }
 
                     const num = Number(val);
 
                     if (isNaN(num)) {
-                      setErrorMessage("Price must be a valid number");
+                      setMessage("Price must be a valid number");
+                      setMessageType("error");
                       return;
                     }
 
                     if (num <= 0) {
-                      setErrorMessage("Price must be greater than 0");
+                      setMessage("Price must be greater than 0");
+                      setMessageType("error");
                       return;
                     }
 
                     if (num > 1000) {
-                      setErrorMessage("Price seems too high");
+                      setMessage("Price seems too high");
+                      setMessageType("error");
                       return;
                     }
 
-                    setErrorMessage("");
+                    setMessage("");
                     setPrice(val);
                   }}
                   className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition mb-2"

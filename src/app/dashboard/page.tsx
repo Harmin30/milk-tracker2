@@ -186,7 +186,7 @@ export default function Dashboard() {
 
           {/* Daily Reminder */}
           {showReminder && hasTodayEntry === false && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-3 rounded-lg shadow-sm mt-4">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-2.5 rounded-lg shadow-sm mt-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1">
                   <div className="text-lg">📝</div>
@@ -212,7 +212,7 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={() => router.push("/entries")}
-                className="mt-2 w-full bg-amber-500 text-white py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600 transition flex items-center justify-center gap-2"
+                className="mt-1.5 w-full bg-amber-500 text-white py-1 rounded-lg text-xs font-medium hover:bg-amber-600 transition flex items-center justify-center gap-2"
               >
                 <i className="fa-solid fa-plus text-xs"></i>
                 Add Entry

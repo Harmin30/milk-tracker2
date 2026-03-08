@@ -12,11 +12,23 @@ export default function Profile() {
   const [buffaloPrice, setBuffaloPrice] = useState("");
 
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [messageType, setMessageType] = useState<
+    "success" | "error" | "warning"
+  >("success");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const router = useRouter();
+
+  // Auto-dismiss success messages after 3 seconds
+  useEffect(() => {
+    if (messageType === "success" && message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, messageType]);
 
   async function logout() {
     await fetch("/api/logout", {
@@ -53,7 +65,6 @@ export default function Profile() {
   async function saveProfile() {
     setSaving(true);
     setMessage("");
-    setError("");
 
     try {
       const res = await fetch("/api/profile", {
@@ -75,20 +86,19 @@ export default function Profile() {
 
       if (res.ok) {
         setMessage("Profile saved successfully");
+        setMessageType("success");
         // Scroll to top to show notification
         window.scrollTo({
           top: 0,
           behavior: "smooth",
         });
-        // Auto-hide message after 3 seconds
-        setTimeout(() => {
-          setMessage("");
-        }, 3000);
       } else {
-        setError(data.error || "Error updating profile");
+        setMessage(data.error || "Error updating profile");
+        setMessageType("error");
       }
     } catch {
-      setError("Something went wrong");
+      setMessage("Something went wrong");
+      setMessageType("error");
     }
 
     setSaving(false);
@@ -96,29 +106,27 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-      {/* SUCCESS TOAST */}
+      {/* TOAST NOTIFICATION */}
       {message && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-white border border-green-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
-            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 text-xs">
-              ✔
-            </div>
-
-            <span className="text-gray-700 font-medium">{message}</span>
-          </div>
-        </div>
-      )}
-
-      {/* ERROR TOAST */}
-      {error && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-white border border-red-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
-            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 text-xs">
-              ✕
-            </div>
-
-            <span className="text-gray-700 font-medium">{error}</span>
-          </div>
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 shadow-lg ${
+            messageType === "success"
+              ? "bg-green-50 border-green-300 text-green-700"
+              : messageType === "error"
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-yellow-50 border-yellow-300 text-yellow-700"
+          }`}
+        >
+          {messageType === "success" && (
+            <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+          )}
+          {messageType === "error" && (
+            <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+          )}
+          {messageType === "warning" && (
+            <i className="fa-solid fa-triangle-exclamation text-lg flex-shrink-0"></i>
+          )}
+          <span>{message}</span>
         </div>
       )}
 
@@ -142,7 +150,9 @@ export default function Profile() {
               <div className="flex items-center gap-2 mb-4">
                 <i className="fa-solid fa-user text-blue-600 text-lg"></i>
                 <div>
-                  <h2 className="font-semibold text-gray-800">Personal Information</h2>
+                  <h2 className="font-semibold text-gray-800">
+                    Personal Information
+                  </h2>
                   <p className="text-xs text-gray-500">Your basic details</p>
                 </div>
               </div>
@@ -187,7 +197,9 @@ export default function Profile() {
                   placeholder="10 digit number"
                   className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
-                <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number without country code</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter 10-digit mobile number without country code
+                </p>
               </div>
             </div>
 
@@ -197,7 +209,9 @@ export default function Profile() {
                 <i className="fa-solid fa-tag text-green-600 text-lg"></i>
                 <div>
                   <h2 className="font-semibold text-gray-800">Milk Pricing</h2>
-                  <p className="text-xs text-gray-500">Default prices for entries</p>
+                  <p className="text-xs text-gray-500">
+                    Default prices for entries
+                  </p>
                 </div>
               </div>
 
@@ -241,7 +255,10 @@ export default function Profile() {
 
               <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg flex gap-2 items-start">
                 <i className="fa-solid fa-circle-info text-sm flex-shrink-0 mt-0.5"></i>
-                <p>These prices will auto-fill when adding milk entries. You can edit them anytime.</p>
+                <p>
+                  These prices will auto-fill when adding milk entries. You can
+                  edit them anytime.
+                </p>
               </div>
             </div>
 
@@ -250,10 +267,10 @@ export default function Profile() {
             <button
               onClick={saveProfile}
               disabled={saving}
-              className={`w-full py-3 rounded-xl font-medium transition flex items-center justify-center gap-2 ${
+              className={`w-full py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 shadow-md ${
                 saving
                   ? "bg-blue-400 cursor-not-allowed opacity-75 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
               }`}
             >
               {saving ? (
@@ -281,7 +298,10 @@ export default function Profile() {
                   <span>Saving...</span>
                 </>
               ) : (
-                "Save Profile"
+                <>
+                  <i className="fa-solid fa-save"></i>
+                  <span>Save Profile</span>
+                </>
               )}
             </button>
 

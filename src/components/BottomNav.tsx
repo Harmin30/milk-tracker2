@@ -32,7 +32,7 @@ export default function BottomNav() {
   return (
     <>
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-3 left-3 right-3 z-[999] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg">
+      <nav className="fixed bottom-3 left-3 right-3 z-[999] rounded-2xl border border-gray-200 bg-white/40 backdrop-blur-xl shadow-lg">
         <div className="mx-auto grid max-w-4xl grid-cols-5 items-center px-3 py-1">
           {navItem("/dashboard", "Home", "fa-house")}
 

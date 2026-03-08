@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type SummaryData = {
   cow_liters: number;
@@ -22,11 +22,29 @@ export default function Summary() {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<
+    "success" | "error" | "warning"
+  >("success");
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
+  // Auto-dismiss success messages after 3 seconds
+  useEffect(() => {
+    if (messageType === "success" && message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, messageType]);
+
   async function fetchSummary() {
-    if (!selectedMonth) return;
+    if (!selectedMonth) {
+      setMessage("Please select a month");
+      setMessageType("warning");
+      return;
+    }
 
     const [year, month] = selectedMonth.split("-");
 
@@ -40,9 +58,17 @@ export default function Summary() {
 
       const result = await res.json();
 
-      setData(result);
+      if (result && result.total_liters) {
+        setData(result);
+        setMessage("Summary loaded successfully");
+        setMessageType("success");
+      } else {
+        setData(result);
+      }
     } catch (err) {
       console.log(err);
+      setMessage("Failed to load summary");
+      setMessageType("error");
     }
 
     setLoading(false);
@@ -68,9 +94,16 @@ export default function Summary() {
       if (res.ok) {
         setShowDeleteModal(false);
         setData(null);
+        setMessage(`${monthLabel} data deleted successfully`);
+        setMessageType("success");
+      } else {
+        setMessage("Failed to delete month data");
+        setMessageType("error");
       }
     } catch (err) {
       console.log(err);
+      setMessage("An error occurred while deleting data");
+      setMessageType("error");
     }
   }
 
@@ -101,15 +134,38 @@ export default function Summary() {
           </p>
         </div>
 
+        {message && (
+          <div
+            className={`p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 ${
+              messageType === "success"
+                ? "bg-green-50 border-green-300 text-green-700"
+                : messageType === "error"
+                  ? "bg-red-50 border-red-300 text-red-700"
+                  : "bg-yellow-50 border-yellow-300 text-yellow-700"
+            }`}
+          >
+            {messageType === "success" && (
+              <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+            )}
+            {messageType === "error" && (
+              <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+            )}
+            {messageType === "warning" && (
+              <i className="fa-solid fa-triangle-exclamation text-lg flex-shrink-0"></i>
+            )}
+            <span>{message}</span>
+          </div>
+        )}
+
         {/* Month Picker */}
 
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <div className="bg-white rounded-2xl shadow-md p-4 space-y-3 border border-gray-100">
+          <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
             <i className="fa-solid fa-calendar text-blue-600"></i>
             Select Month
           </label>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Month selector */}
             <div className="relative flex-1 min-w-[170px]">
               <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -123,7 +179,7 @@ export default function Summary() {
                   setData(null);
                   setSearched(false);
                 }}
-                className="w-full border-2 border-gray-200 rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full border-2 border-gray-200 rounded-lg pl-11 pr-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm"
               />
             </div>
 
@@ -135,17 +191,18 @@ export default function Summary() {
                   setData(null);
                   setSearched(false);
                 }}
-                className="flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
               >
-                <i className="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark text-xs"></i>
               </button>
             )}
           </div>
 
           <button
             onClick={fetchSummary}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center gap-2"
           >
+            <i className="fa-solid fa-magnifying-glass"></i>
             Get Summary
           </button>
         </div>
@@ -253,31 +310,35 @@ export default function Summary() {
       {/* DELETE MODAL */}
 
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-80 text-center space-y-4">
-            <h2 className="text-lg font-semibold text-red-600 flex items-center justify-center gap-2">
-              <i className="fa-solid fa-triangle-exclamation"></i>
-              Delete {monthLabel} Data
-            </h2>
-            <p className="text-sm text-gray-600">
-              This will delete all milk entries and bills for {monthLabel}.
-            </p>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
+            <div className="flex justify-center">
+              <div className="bg-red-100 p-3 rounded-full">
+                <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
+              </div>
+            </div>
 
-            <p className="text-xs text-red-500 font-medium">
-              This action cannot be undone.
-            </p>
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">
+                Delete {monthLabel}?
+              </h2>
+              <p className="text-sm text-gray-500 mt-2">
+                This will delete all milk entries and bills for {monthLabel}.
+                This action cannot be undone.
+              </p>
+            </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 border py-2 rounded-lg"
+                className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
               >
                 Cancel
               </button>
 
               <button
                 onClick={deleteMonthData}
-                className="flex-1 bg-red-600 text-white py-2 rounded-lg"
+                className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
               >
                 Delete
               </button>
