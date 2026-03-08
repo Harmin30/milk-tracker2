@@ -23,8 +23,11 @@ export default function Dashboard() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [welcomeName, setWelcomeName] = useState("");
   const [showWelcome, setShowWelcome] = useState(false);
-  const [hasTodayEntry, setHasTodayEntry] = useState(false);
+  const [hasTodayEntry, setHasTodayEntry] = useState<boolean | null>(null);
   const [showReminder, setShowReminder] = useState(true);
+  const [todayEntries, setTodayEntries] = useState<Entry[]>([]);
+  const [todayMilk, setTodayMilk] = useState(0);
+  const [todayAmount, setTodayAmount] = useState(0);
   const now = new Date();
 
   const monthLabel = now.toLocaleString("en-IN", {
@@ -44,6 +47,9 @@ export default function Dashboard() {
         let cow = 0;
         let buffalo = 0;
         let amount = 0;
+        let todayMilkSum = 0;
+        let todayAmountSum = 0;
+        const todaysEntries: Entry[] = [];
 
         const now = new Date();
         const month = now.getMonth();
@@ -69,12 +75,18 @@ export default function Dashboard() {
 
           if (entryDate === today) {
             todayHasEntry = true;
+            todaysEntries.push(e);
+            todayMilkSum += Number(e.liters);
+            todayAmountSum += Number(e.total_amount);
           }
         });
 
         setCowLiters(cow);
         setBuffaloLiters(buffalo);
         setTotalAmount(amount);
+        setTodayEntries(todaysEntries);
+        setTodayMilk(todayMilkSum);
+        setTodayAmount(todayAmountSum);
         setHasTodayEntry(todayHasEntry);
       }
     } catch (err) {
@@ -173,7 +185,7 @@ export default function Dashboard() {
           </div>
 
           {/* Daily Reminder */}
-          {showReminder && !hasTodayEntry && (
+          {showReminder && hasTodayEntry === false && (
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-3 rounded-lg shadow-sm mt-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1">
@@ -207,6 +219,96 @@ export default function Dashboard() {
               </button>
             </div>
           )}
+
+          {/* Today's Summary Card */}
+          <div className="bg-white rounded-2xl shadow-md p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h2 className="font-semibold text-gray-800 text-sm">Today</h2>
+                <p className="text-xs text-gray-500">
+                  {new Date().toLocaleDateString("en-IN", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+
+              <div
+                className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+                  hasTodayEntry
+                    ? "bg-green-100 text-green-600"
+                    : "bg-gray-100 text-gray-400"
+                }`}
+              >
+                <i
+                  className={`fa-solid text-lg ${
+                    hasTodayEntry ? "fa-check-circle" : "fa-circle"
+                  }`}
+                ></i>
+              </div>
+            </div>
+
+            {hasTodayEntry ? (
+              <div className="space-y-1">
+                {todayEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-100 p-2.5 rounded-lg"
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="text-sm flex-shrink-0">
+                        {entry.milk_type === "cow" ? "🐄" : "🐃"}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-gray-800">
+                          {entry.milk_type === "cow" ? "Cow" : "Buffalo"}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {Number(entry.liters)} L
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="text-xs font-semibold text-green-700">
+                        ₹{Number(entry.total_amount)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-gray-600">Total</span>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-gray-800">
+                        {todayMilk} L
+                      </p>
+                      <p className="text-xs font-semibold text-green-600">
+                        ₹{todayAmount}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-2 text-center">
+                <div className="text-gray-300 text-2xl mb-1">
+                  <i className="fa-solid fa-droplet"></i>
+                </div>
+                <p className="text-gray-600 text-xs mb-2">
+                  No entries logged yet
+                </p>
+                <button
+                  onClick={() => router.push("/entries")}
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+                >
+                  <i className="fa-solid fa-plus mr-1"></i>
+                  Add Entry
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Monthly Milk Summary */}
           <div className="bg-white rounded-2xl shadow-md p-5">
@@ -287,38 +389,39 @@ export default function Dashboard() {
 
           {/* Quick Actions */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
+            <h2 className="text-sm font-semibold mb-3 text-gray-800">
+              Quick Actions
+            </h2>
 
-            {/* Primary action */}
-            <button
-              onClick={() => router.push("/entries")}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium mb-4 hover:bg-blue-700 transition"
-            >
-              <i className="fa-solid fa-plus mr-2"></i>
-              Add Milk Entry
-            </button>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => router.push("/entries")}
+                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
+              >
+                <div className="text-blue-600 text-lg mb-2">
+                  <i className="fa-solid fa-plus"></i>
+                </div>
+                <p className="text-xs font-medium text-gray-800">Add Entry</p>
+              </button>
 
-            <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => router.push("/records")}
-                className="bg-white shadow-md rounded-xl p-4 text-center hover:shadow-lg transition"
+                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
               >
-                <div className="text-green-600 text-xl mb-2">
-                  <i className="fa-solid fa-file-lines"></i>
+                <div className="text-green-600 text-lg mb-2">
+                  <i className="fa-solid fa-list"></i>
                 </div>
-
-                <p className="text-sm font-medium">Records</p>
+                <p className="text-xs font-medium text-gray-800">Records</p>
               </button>
 
               <button
                 onClick={() => router.push("/bills")}
-                className="bg-white shadow-md rounded-xl p-4 text-center hover:shadow-lg transition"
+                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
               >
-                <div className="text-purple-600 text-xl mb-2">
+                <div className="text-orange-600 text-lg mb-2">
                   <i className="fa-solid fa-file-invoice"></i>
                 </div>
-
-                <p className="text-sm font-medium">Bills</p>
+                <p className="text-xs font-medium text-gray-800">Bills</p>
               </button>
             </div>
           </div>

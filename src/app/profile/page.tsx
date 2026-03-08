@@ -138,55 +138,74 @@ export default function Profile() {
         {!loading && (
           <>
             {/* PERSONAL INFO */}
-
             <div className="bg-white p-5 rounded-xl shadow-sm space-y-4">
-              <h2 className="font-semibold text-gray-700">
-                Personal Information
-              </h2>
+              <div className="flex items-center gap-2 mb-4">
+                <i className="fa-solid fa-user text-blue-600 text-lg"></i>
+                <div>
+                  <h2 className="font-semibold text-gray-800">Personal Information</h2>
+                  <p className="text-xs text-gray-500">Your basic details</p>
+                </div>
+              </div>
 
               <div>
-                <label className="text-sm text-gray-600">Full Name</label>
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                  <i className="fa-solid fa-id-card text-blue-500 text-xs"></i>
+                  Full Name
+                </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Address</label>
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                  <i className="fa-solid fa-map-pin text-blue-500 text-xs"></i>
+                  Address
+                </label>
                 <input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Enter your address"
-                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Mobile Number</label>
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                  <i className="fa-solid fa-phone text-blue-500 text-xs"></i>
+                  Mobile Number
+                </label>
                 <input
                   type="tel"
                   maxLength={10}
                   pattern="[0-9]{10}"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
-                  placeholder="10 digit mobile number"
-                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                  placeholder="10 digit number"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
+                <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number without country code</p>
               </div>
             </div>
 
             {/* MILK PRICES */}
-
             <div className="bg-white p-5 rounded-xl shadow-sm space-y-4">
-              <h2 className="font-semibold text-gray-700">Milk Pricing</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <i className="fa-solid fa-tag text-green-600 text-lg"></i>
+                <div>
+                  <h2 className="font-semibold text-gray-800">Milk Pricing</h2>
+                  <p className="text-xs text-gray-500">Default prices for entries</p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 {/* Buffalo First */}
                 <div>
-                  <label className="text-sm text-gray-600 flex items-center gap-1">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                    <i className="fa-solid fa-cow text-blue-500 text-xs"></i>
                     🐃 Buffalo Price
                   </label>
 
@@ -196,14 +215,15 @@ export default function Profile() {
                     step="0.01"
                     value={buffaloPrice}
                     onChange={(e) => setBuffaloPrice(e.target.value)}
-                    placeholder="Price / Liter"
-                    className="w-full border rounded-lg px-4 py-3 mt-1"
+                    placeholder="Price/L"
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   />
                 </div>
 
                 {/* Cow Second */}
                 <div>
-                  <label className="text-sm text-gray-600 flex items-center gap-1">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                    <i className="fa-solid fa-cow text-green-500 text-xs"></i>
                     🐄 Cow Price
                   </label>
 
@@ -213,15 +233,15 @@ export default function Profile() {
                     step="0.01"
                     value={cowPrice}
                     onChange={(e) => setCowPrice(e.target.value)}
-                    placeholder="Price / Liter"
-                    className="w-full border rounded-lg px-4 py-3 mt-1"
+                    placeholder="Price/L"
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   />
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg">
-                Default prices will automatically appear when adding milk
-                entries. You can still edit the price during entry if needed.
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg flex gap-2 items-start">
+                <i className="fa-solid fa-circle-info text-sm flex-shrink-0 mt-0.5"></i>
+                <p>These prices will auto-fill when adding milk entries. You can edit them anytime.</p>
               </div>
             </div>
 

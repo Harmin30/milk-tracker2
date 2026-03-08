@@ -239,11 +239,11 @@ function EntriesPage() {
           )}
 
           <div
-            className={`rounded-2xl shadow-md p-5 ${
+            className={`rounded-2xl shadow-md p-4 ${
               editMode ? "bg-yellow-50 border border-yellow-200" : "bg-white"
             }`}
           >
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Date */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
@@ -305,52 +305,75 @@ function EntriesPage() {
 
               {/* Liters */}
               <div>
-                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i className="fa-solid fa-droplet text-blue-600"></i>
                   Liters
+                  {liters && Number(liters) > 0 && (
+                    <span className="text-green-600 text-xs">✓</span>
+                  )}
                 </label>
 
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={liters}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                <div className="mb-3">
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={liters}
+                    onChange={(e) => {
+                      const val = e.target.value;
 
-                    if (val === "") {
-                      setLiters("");
-                      return;
-                    }
+                      if (val === "") {
+                        setLiters("");
+                        return;
+                      }
 
-                    const num = Number(val);
+                      const num = Number(val);
 
-                    if (isNaN(num)) {
-                      setErrorMessage("Liters must be a valid number");
-                      return;
-                    }
+                      if (isNaN(num)) {
+                        setErrorMessage("Liters must be a valid number");
+                        return;
+                      }
 
-                    if (num <= 0) {
-                      setErrorMessage("Liters must be greater than 0");
-                      return;
-                    }
+                      if (num <= 0) {
+                        setErrorMessage("Liters must be greater than 0");
+                        return;
+                      }
 
-                    if (num > 1000) {
-                      setErrorMessage("Liters value seems too large");
-                      return;
-                    }
+                      if (num > 1000) {
+                        setErrorMessage("Liters value seems too large");
+                        return;
+                      }
 
-                    setErrorMessage("");
-                    setLiters(val);
-                  }}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                  required
-                />
+                      setErrorMessage("");
+                      setLiters(val);
+                    }}
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  {[2, 4, 6, 8].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setLiters(String(preset))}
+                      className="border border-blue-300 text-blue-700 px-2 py-0.5 rounded-md font-medium text-xs hover:bg-blue-50 hover:border-blue-500 transition"
+                    >
+                      {preset}L
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Price */}
               <div>
-                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i className="fa-solid fa-indian-rupee text-blue-600"></i>
                   Price per Liter
+                  {price && Number(price) > 0 && (
+                    <span className="text-green-600 text-xs">✓</span>
+                  )}
                 </label>
 
                 <input
@@ -386,33 +409,35 @@ function EntriesPage() {
                     setErrorMessage("");
                     setPrice(val);
                   }}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition mb-2"
                 />
 
-                <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg mt-2 flex gap-2 items-start">
-                  <i className="fa-solid fa-circle-info mt-[2px]"></i>
-
-                  <p>
-                    Prices from your profile will automatically appear here. You
-                    can still edit them manually.
+                <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-2 rounded-lg flex gap-1.5 items-center">
+                  <i className="fa-solid fa-circle-info flex-shrink-0 text-sm"></i>
+                  <p className="flex-1">
+                    Prices auto-filled from profile.
                     <button
                       type="button"
                       onClick={() => router.push("/profile")}
                       className="ml-1 underline font-medium text-blue-700"
                     >
-                      (Set prices)
+                      Edit
                     </button>
                   </p>
                 </div>
               </div>
 
-              {/* Total */}
-              <div className="bg-gray-50 p-3 rounded-lg flex justify-between">
-                <span className="text-gray-600">Total Amount</span>
-
-                <span className="font-semibold text-green-600">
-                  ₹ {total.toFixed(2)}
-                </span>
+              {/* Total with Breakdown */}
+              <div className="bg-gradient-to-r from-green-50 to-green-50 border border-green-200 p-3 rounded-lg">
+                <p className="text-xs text-green-700 font-medium mb-0.5">
+                  Total
+                </p>
+                <p className="text-sm text-green-800 font-semibold">
+                  {liters || "0"}L × ₹{price || "0"} ={" "}
+                  <span className="text-base font-bold">
+                    ₹{total.toFixed(2)}
+                  </span>
+                </p>
               </div>
 
               <button

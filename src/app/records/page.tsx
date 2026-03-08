@@ -201,7 +201,7 @@ export default function Records() {
           </div>
 
           {/* SEARCH BAR */}
-          <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+          <div className="bg-white rounded-xl shadow-sm p-3 space-y-3">
             {/* DATE SEARCH LABEL */}
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <i className="fa-solid fa-calendar text-blue-600"></i>
@@ -209,7 +209,7 @@ export default function Records() {
             </label>
 
             {/* DATE SEARCH */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <div className="relative flex-1 min-w-[180px]">
                 <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
 
@@ -218,7 +218,7 @@ export default function Records() {
                   value={searchDate}
                   onChange={(e) => setSearchDate(e.target.value)}
                   max={new Date().toISOString().slice(0, 10)}
-                  className="w-full border-2 border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full border-2 border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
               </div>
 
@@ -229,9 +229,9 @@ export default function Records() {
                     setMilkFilter("all");
                     setDateFilter("all");
                   }}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
                 >
-                  <i className="fa-solid fa-xmark"></i>
+                  <i className="fa-solid fa-xmark text-sm"></i>
                 </button>
               )}
             </div>
@@ -359,65 +359,69 @@ export default function Records() {
                 .map(([date, entries]) => (
                   <div key={date}>
                     {/* DATE HEADER */}
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-lg font-semibold text-gray-800">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <p className="text-sm font-semibold text-gray-800">
                         {formatDate(date)}
                       </p>
 
-                      <span className="text-xs text-gray-500">
-                        {entries.length}{" "}
-                        {entries.length === 1 ? "entry" : "entries"}
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                        {entries.length}
                       </span>
                     </div>
 
-                    <div className="border-b mb-4"></div>
+                    <div className="border-b mb-3"></div>
 
                     {/* ENTRIES */}
-                    <div className="space-y-4">
+                    <div className="space-y-2.5">
                       {entries.map((entry) => (
                         <div
                           key={entry.id}
-                          className="bg-white rounded-2xl shadow-md p-4"
+                          className={`bg-white rounded-lg shadow-sm p-3.5 border-l-4 ${
+                            entry.milk_type === "cow" ? "border-green-500" : "border-blue-500"
+                          }`}
                         >
-                          {/* ENTRY ROW */}
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex flex-col gap-1">
-                                {entry.milk_type === "cow" ? (
-                                  <span className="inline-flex items-center gap-1 bg-green-50 border border-green-200 text-green-700 text-xs px-2.5 py-1 rounded-full w-fit">
-                                    🐄 Cow
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs px-2.5 py-1 rounded-full w-fit">
-                                    🐃 Buffalo
-                                  </span>
-                                )}
+                          {/* HEADER - BADGE + TOTAL */}
+                          <div className="flex items-center justify-between mb-3">
+                            <span className={`text-xs px-3 py-0.5 rounded-full font-medium flex items-center gap-1 ${
+                              entry.milk_type === "cow" 
+                                ? "bg-green-100 text-green-700" 
+                                : "bg-blue-100 text-blue-700"
+                            }`}>
+                              {entry.milk_type === "cow" ? "🐄 Cow" : "🐃 Buffalo"}
+                            </span>
+                            <p className="text-sm font-bold text-green-600">
+                              ₹{Number(entry.total_amount).toFixed(2)}
+                            </p>
+                          </div>
 
-                                <span className="text-xs text-gray-500 font-medium">
-                                  ₹{entry.price_per_liter}/L
-                                </span>
+                          {/* INFO ROW - HORIZONTAL */}
+                          <div className="flex items-center justify-between gap-4 mb-4">
+                            {/* LITERS */}
+                            <div className="flex items-center gap-2.5">
+                              <i className="fa-solid fa-droplet text-blue-500 text-sm flex-shrink-0"></i>
+                              <div>
+                                <p className="text-xs text-gray-500">Liters</p>
+                                <p className="text-sm font-semibold text-gray-800">{entry.liters}L</p>
                               </div>
                             </div>
 
-                            <div className="text-right">
-                              <p className="text-lg font-semibold text-green-600">
-                                ₹{Number(entry.total_amount).toFixed(2)}
-                              </p>
+                            {/* SEPARATOR */}
+                            <div className="h-8 border-l border-gray-300 flex-shrink-0"></div>
 
-                              <p className="text-sm font-semibold text-gray-800">
-                                {entry.liters} L
-                              </p>
+                            {/* PRICE PER LITER */}
+                            <div>
+                              <p className="text-xs text-gray-500">Price/L</p>
+                              <p className="text-sm font-semibold text-gray-800">₹{entry.price_per_liter}</p>
                             </div>
                           </div>
 
                           {/* ACTION BUTTONS */}
-
-                          <div className="flex gap-3 mt-3">
+                          <div className="flex gap-2 pt-0.5">
                             <button
                               onClick={() =>
                                 router.push(`/entries?id=${entry.id}`)
                               }
-                              className="flex-1 flex items-center justify-center gap-2 border border-blue-400 text-blue-600 py-2 rounded-xl text-sm font-medium hover:bg-blue-50 transition"
+                              className="flex-1 max-w-sm flex items-center justify-center gap-1 border border-blue-300 text-blue-600 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-50 transition"
                             >
                               <i className="fa-solid fa-pen text-xs"></i>
                               Edit
@@ -425,7 +429,7 @@ export default function Records() {
 
                             <button
                               onClick={() => setDeleteId(entry.id)}
-                              className="flex-1 flex items-center justify-center gap-2 border border-red-400 text-red-600 py-2 rounded-xl text-sm font-medium hover:bg-red-50 transition"
+                              className="flex-1 max-w-sm flex items-center justify-center gap-1 border border-red-300 text-red-600 py-1.5 rounded-lg text-xs font-medium hover:bg-red-50 transition"
                             >
                               <i className="fa-solid fa-trash text-xs"></i>
                               Delete
@@ -433,18 +437,17 @@ export default function Records() {
                           </div>
 
                           {/* DELETE CONFIRM */}
-
                           {deleteId === entry.id && (
-                            <div className="mt-4 border-t pt-4 space-y-3">
-                              <p className="text-sm text-gray-600">
-                                Are you sure you want to delete this entry?
+                            <div className="mt-2.5 border-t pt-2.5 space-y-2">
+                              <p className="text-xs text-gray-600">
+                                Delete this entry?
                               </p>
 
-                              <div className="flex gap-3">
+                              <div className="flex gap-2">
                                 <button
                                   onClick={() => setDeleteId(null)}
                                   disabled={deleting}
-                                  className="flex-1 border py-2 rounded-lg text-sm disabled:opacity-50"
+                                  className="flex-1 border text-xs py-1.5 rounded disabled:opacity-50"
                                 >
                                   Cancel
                                 </button>
@@ -452,7 +455,7 @@ export default function Records() {
                                 <button
                                   onClick={() => confirmDelete(entry.id)}
                                   disabled={deleting}
-                                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition ${
+                                  className={`flex-1 py-1.5 rounded text-xs flex items-center justify-center gap-1 transition ${
                                     deleting
                                       ? "bg-red-400 text-white cursor-not-allowed opacity-75"
                                       : "bg-red-600 text-white hover:bg-red-700"
@@ -461,7 +464,7 @@ export default function Records() {
                                   {deleting ? (
                                     <>
                                       <svg
-                                        className="w-4 h-4 animate-spin"
+                                        className="w-3 h-3 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -480,7 +483,7 @@ export default function Records() {
                                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                       </svg>
-                                      <span>Deleting...</span>
+                                      <span>Deleting</span>
                                     </>
                                   ) : (
                                     "Delete"
