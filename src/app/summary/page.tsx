@@ -23,6 +23,8 @@ export default function Summary() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [searched, setSearched] = useState(false);
 
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
   async function fetchSummary() {
     if (!selectedMonth) return;
 
@@ -101,8 +103,11 @@ export default function Summary() {
 
         {/* Month Picker */}
 
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-          <label className="text-sm text-gray-600">Select Month</label>
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <i className="fa-solid fa-calendar text-blue-600"></i>
+            Select Month
+          </label>
 
           <div className="flex items-center gap-3 flex-wrap">
             {/* Month selector */}
@@ -112,12 +117,13 @@ export default function Summary() {
               <input
                 type="month"
                 value={selectedMonth}
+                max={currentMonth}
                 onChange={(e) => {
                   setSelectedMonth(e.target.value);
                   setData(null);
                   setSearched(false);
                 }}
-                className="w-full border rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg pl-11 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               />
             </div>
 

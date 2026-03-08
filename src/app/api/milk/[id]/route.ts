@@ -76,16 +76,16 @@ export async function PUT(
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { date, liters, price } = await req.json();
+    const { date, milk_type, liters, price_per_liter } = await req.json();
     const safeDate = date.split("T")[0];
 
     await pool.query(
       `
       UPDATE milk_entries
-      SET date = $1, liters = $2, price_per_liter = $3
-      WHERE id = $4::uuid AND user_id = $5::uuid
+      SET date = $1, milk_type = $2, liters = $3, price_per_liter = $4
+      WHERE id = $5::uuid AND user_id = $6::uuid
       `,
-      [safeDate, liters, price, id, user.userId],
+      [safeDate, milk_type, liters, price_per_liter, id, user.userId],
     );
 
     return NextResponse.json({ message: "Milk entry updated" });

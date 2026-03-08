@@ -139,8 +139,9 @@ function EntriesPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             date,
+            milk_type: milkType,
             liters: Number(liters),
-            price: Number(price),
+            price_per_liter: Number(price),
           }),
         });
       } else {
@@ -245,9 +246,12 @@ function EntriesPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Date */}
               <div>
-                <label className="text-sm text-gray-600">Date</label>
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                  <i className="fa-solid fa-calendar text-blue-600"></i>
+                  Date
+                </label>
 
-                <div className="relative mt-1">
+                <div className="relative">
                   <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
 
                   <input
@@ -255,14 +259,16 @@ function EntriesPage() {
                     value={date}
                     max={today}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"
+                    className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Milk Type */}
               <div>
-                <label className="text-sm text-gray-600">Milk Type</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Milk Type
+                </label>
 
                 <div className="flex gap-3 mt-2">
                   {/* Buffalo First */}
@@ -299,7 +305,9 @@ function EntriesPage() {
 
               {/* Liters */}
               <div>
-                <label className="text-sm text-gray-600">Liters</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Liters
+                </label>
 
                 <input
                   type="number"
@@ -334,14 +342,16 @@ function EntriesPage() {
                     setErrorMessage("");
                     setLiters(val);
                   }}
-                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   required
                 />
               </div>
 
               {/* Price */}
               <div>
-                <label className="text-sm text-gray-600">Price per liter</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Price per Liter
+                </label>
 
                 <input
                   type="number"
@@ -376,7 +386,7 @@ function EntriesPage() {
                     setErrorMessage("");
                     setPrice(val);
                   }}
-                  className="w-full border rounded-lg px-4 py-3 mt-1"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
 
                 <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg mt-2 flex gap-2 items-start">

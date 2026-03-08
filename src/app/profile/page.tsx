@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-
 import { useRouter } from "next/navigation";
 
 export default function Profile() {
@@ -75,11 +74,20 @@ export default function Profile() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Profile updated successfully");
+        setMessage("Profile saved successfully");
+        // Scroll to top to show notification
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+        // Auto-hide message after 3 seconds
+        setTimeout(() => {
+          setMessage("");
+        }, 3000);
       } else {
         setError(data.error || "Error updating profile");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong");
     }
 
@@ -88,7 +96,31 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
+      {/* SUCCESS TOAST */}
+      {message && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-white border border-green-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 text-xs">
+              ✔
+            </div>
 
+            <span className="text-gray-700 font-medium">{message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ERROR TOAST */}
+      {error && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-white border border-red-200 shadow-lg rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 text-xs">
+              ✕
+            </div>
+
+            <span className="text-gray-700 font-medium">{error}</span>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
         {/* PAGE HEADER */}
@@ -100,20 +132,6 @@ export default function Profile() {
             Manage your personal details and milk pricing
           </p>
         </div>
-
-        {/* ALERTS */}
-
-        {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm p-3 rounded-lg">
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
-            {error}
-          </div>
-        )}
 
         {loading && <p className="text-gray-500 text-sm">Loading profile...</p>}
 
@@ -211,9 +229,40 @@ export default function Profile() {
 
             <button
               onClick={saveProfile}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium transition"
+              disabled={saving}
+              className={`w-full py-3 rounded-xl font-medium transition flex items-center justify-center gap-2 ${
+                saving
+                  ? "bg-blue-400 cursor-not-allowed opacity-75 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
             >
-              {saving ? "Saving..." : "Save Profile"}
+              {saving ? (
+                <>
+                  <svg
+                    className="w-5 h-5 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save Profile"
+              )}
             </button>
 
             {/* LOGOUT */}
@@ -230,7 +279,6 @@ export default function Profile() {
           </>
         )}
       </div>
-
     </div>
   );
 }

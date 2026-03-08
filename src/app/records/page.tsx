@@ -18,6 +18,7 @@ export default function Records() {
   const [records, setRecords] = useState<MilkEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
 
   const [milkFilter, setMilkFilter] = useState<"all" | "cow" | "buffalo">(
@@ -64,8 +65,23 @@ export default function Records() {
     loadRecords(1);
   }, [searchDate, milkFilter, dateFilter]);
 
+  // Refresh records when page becomes visible (returning from edit)
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadRecords(currentPage);
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [currentPage]);
+
   async function confirmDelete(id: string) {
     setErrorMessage("");
+    setDeleting(true);
 
     try {
       const res = await fetch(`/api/milk/${id}`, {
@@ -76,6 +92,7 @@ export default function Records() {
 
       if (!res.ok) {
         setErrorMessage(data.error || "Failed to delete entry");
+        setDeleting(false);
         return;
       }
 
@@ -93,8 +110,11 @@ export default function Records() {
       setTimeout(() => {
         setToast("");
       }, 2500);
+
+      setDeleting(false);
     } catch (err) {
       setErrorMessage("Something went wrong while deleting");
+      setDeleting(false);
     }
   }
 
@@ -181,11 +201,12 @@ export default function Records() {
           </div>
 
           {/* SEARCH BAR */}
-          <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-            {/* HELPER TEXT */}
-            <p className="text-xs text-gray-500">
-              Search by date or filter records
-            </p>
+          <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+            {/* DATE SEARCH LABEL */}
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <i className="fa-solid fa-calendar text-blue-600"></i>
+              Search by Date
+            </label>
 
             {/* DATE SEARCH */}
             <div className="flex items-center gap-3 flex-wrap">
@@ -196,7 +217,8 @@ export default function Records() {
                   type="date"
                   value={searchDate}
                   onChange={(e) => setSearchDate(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="w-full border-2 border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 />
               </div>
 
@@ -287,40 +309,50 @@ export default function Records() {
             <p className="text-gray-500 text-sm">Loading records...</p>
           )}
 
-          {/* EMPTY STATE */}
+          {/* EMPTY STATE - NO RECORDS & NO FILTERS */}
 
-          {!loading && records.length === 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <i className="fa-solid fa-database text-gray-300 text-3xl mb-3"></i>
+          {!loading &&
+            records.length === 0 &&
+            !searchDate &&
+            milkFilter === "all" &&
+            dateFilter === "all" && (
+              <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                <i className="fa-solid fa-database text-gray-300 text-3xl mb-3"></i>
 
-              <p className="text-gray-500">No milk entries yet</p>
-            </div>
-          )}
+                <p className="text-gray-500">No milk entries yet</p>
+              </div>
+            )}
+
+          {/* NO SEARCH RESULTS STATE */}
+
+          {!loading &&
+            records.length === 0 &&
+            (searchDate || milkFilter !== "all" || dateFilter !== "all") && (
+              <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                <i className="fa-solid fa-magnifying-glass text-gray-300 text-3xl mb-3"></i>
+
+                <p className="text-gray-500 font-medium">No records found</p>
+
+                <p className="text-xs text-gray-400 mt-1">
+                  Try changing search or filters
+                </p>
+
+                <button
+                  onClick={() => {
+                    setSearchDate("");
+                    setMilkFilter("all");
+                    setDateFilter("all");
+                  }}
+                  className="mt-3 text-sm text-blue-600 hover:underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
 
           {/* RECORDS LIST */}
 
-          {records.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <i className="fa-solid fa-magnifying-glass text-gray-300 text-3xl mb-3"></i>
-
-              <p className="text-gray-500 font-medium">No records found</p>
-
-              <p className="text-xs text-gray-400 mt-1">
-                Try changing search or filters
-              </p>
-
-              <button
-                onClick={() => {
-                  setSearchDate("");
-                  setMilkFilter("all");
-                  setDateFilter("all");
-                }}
-                className="mt-3 text-sm text-blue-600 hover:underline"
-              >
-                Clear filters
-              </button>
-            </div>
-          ) : (
+          {records.length > 0 && (
             <div className="space-y-6">
               {Object.entries(groupedRecords)
                 .sort((a, b) => b[0].localeCompare(a[0]))
@@ -411,16 +443,48 @@ export default function Records() {
                               <div className="flex gap-3">
                                 <button
                                   onClick={() => setDeleteId(null)}
-                                  className="flex-1 border py-2 rounded-lg text-sm"
+                                  disabled={deleting}
+                                  className="flex-1 border py-2 rounded-lg text-sm disabled:opacity-50"
                                 >
                                   Cancel
                                 </button>
 
                                 <button
                                   onClick={() => confirmDelete(entry.id)}
-                                  className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm"
+                                  disabled={deleting}
+                                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition ${
+                                    deleting
+                                      ? "bg-red-400 text-white cursor-not-allowed opacity-75"
+                                      : "bg-red-600 text-white hover:bg-red-700"
+                                  }`}
                                 >
-                                  Delete
+                                  {deleting ? (
+                                    <>
+                                      <svg
+                                        className="w-4 h-4 animate-spin"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <circle
+                                          className="opacity-25"
+                                          cx="12"
+                                          cy="12"
+                                          r="10"
+                                          stroke="currentColor"
+                                          strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                          className="opacity-75"
+                                          fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                      </svg>
+                                      <span>Deleting...</span>
+                                    </>
+                                  ) : (
+                                    "Delete"
+                                  )}
                                 </button>
                               </div>
                             </div>
