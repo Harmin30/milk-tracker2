@@ -194,20 +194,29 @@ export async function POST(req: NextRequest) {
     page.drawText("Milk Bill", {
       x: 60,
       y,
-      size: 20,
+      size: 22,
+      font: boldFont,
+      color: blue,
+    });
+
+    // Period label and dates on right
+    page.drawText("Bill Period:", {
+      x: 375,
+      y,
+      size: 10,
       font: boldFont,
       color: blue,
     });
 
     const periodText = `${formattedStart} - ${formattedEnd}`;
     page.drawText(periodText, {
-      x: 400,
+      x: 438,
       y,
-      size: 11,
+      size: 10,
       font,
     });
 
-    y -= 30;
+    y -= 25;
 
     page.drawLine({
       start: { x: 50, y },
@@ -216,23 +225,87 @@ export async function POST(req: NextRequest) {
       color: borderGray,
     });
 
-    y -= 25;
+    y -= 15;
 
     // ---------- Customer Info ----------
-    page.drawText(profile.name, {
+    // Name on same line as label
+    page.drawText("Name:", {
       x: 60,
       y,
-      size: 14,
+      size: 9,
+      font: boldFont,
+      color: blue,
+    });
+
+    page.drawText(profile.name, {
+      x: 115,
+      y,
+      size: 12,
       font: boldFont,
     });
 
     y -= 18;
 
-    page.drawText(profile.address, { x: 60, y, size: 11, font });
-    y -= 15;
-    page.drawText(profile.mobile, { x: 60, y, size: 11, font });
+    // Address label - will be on same line as first address line
+    const addressLabelY = y;
 
-    y -= 30;
+    page.drawText("Address:", {
+      x: 60,
+      y: addressLabelY,
+      size: 9,
+      font: boldFont,
+      color: blue,
+    });
+
+    // Address - split into multiple lines if needed, starting from same x as value
+    const maxAddressWidth = 320;
+    const addressFontSize = 10;
+    const addressWords = profile.address.split(" ");
+    let currentLine = "";
+    let addressY = addressLabelY; // Start at same y as label
+    const addressStartX = 115;
+
+    addressWords.forEach((word: string) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const lineWidth = font.widthOfTextAtSize(testLine, addressFontSize);
+
+      if (lineWidth > maxAddressWidth && currentLine) {
+        page.drawText(currentLine, {
+          x: addressStartX,
+          y: addressY,
+          size: addressFontSize,
+          font,
+        });
+        addressY -= 12;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+
+    if (currentLine) {
+      page.drawText(currentLine, {
+        x: addressStartX,
+        y: addressY,
+        size: addressFontSize,
+        font,
+      });
+    }
+
+    y = addressY - 15; // Add more spacing before mobile
+
+    // Mobile number label and value on same line
+    page.drawText("Mobile:", {
+      x: 60,
+      y,
+      size: 9,
+      font: boldFont,
+      color: blue,
+    });
+
+    page.drawText(profile.mobile, { x: 115, y, size: 11, font });
+
+    y -= 18;
 
     // ---------- Summary Boxes ----------
     const drawBox = (
