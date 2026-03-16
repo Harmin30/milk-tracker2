@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
     // ================= MODERN CLEAN PROFESSIONAL INVOICE =================
 
     const pdfDoc = await PDFDocument.create();
-    let page = pdfDoc.addPage([595, 842]);
+    const page = pdfDoc.addPage([595, 842]);
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -357,7 +357,6 @@ export async function POST(req: NextRequest) {
     const tableLeft = 50;
     const tableRight = 555;
     const tableTop = y;
-    const tableBottom = 120;
 
     // Column boundaries (GRID SYSTEM)
     const colDateStart = 50;

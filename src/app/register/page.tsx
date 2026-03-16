@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Register() {
@@ -10,11 +10,21 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string;
     password?: string;
   }>({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        router.push("/login");
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [success, router]);
 
   function validateInputs() {
     const errors: { email?: string; password?: string } = {};
@@ -65,9 +75,8 @@ export default function Register() {
         return;
       }
 
-      // Show success and redirect
-      alert("Account created successfully! Redirecting to login...");
-      router.push("/login");
+      // Set success state to show success message
+      setSuccess(true);
     } catch {
       setError("Something went wrong");
       setLoading(false);
@@ -98,7 +107,18 @@ export default function Register() {
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        {/* Success Message with Animation */}
+        {success && (
+          <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 text-green-700 p-4 rounded-xl flex items-start gap-3 shadow-lg animate-pulse">
+            <div className="text-2xl flex-shrink-0">✅</div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm">Account Created Successfully!</p>
+              <p className="text-xs text-green-600 mt-1">Redirecting to login page...</p>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className={`space-y-4 ${success ? "opacity-50 pointer-events-none" : ""}`}>
           {/* Email */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">
@@ -120,7 +140,7 @@ export default function Register() {
                   setEmail(e.target.value);
                   if (fieldErrors.email) setFieldErrors({});
                 }}
-                disabled={loading}
+                disabled={loading || success}
               />
             </div>
             {fieldErrors.email && (
@@ -152,13 +172,13 @@ export default function Register() {
                   setPassword(e.target.value);
                   if (fieldErrors.password) setFieldErrors({});
                 }}
-                disabled={loading}
+                disabled={loading || success}
               />
               <i
                 className={`fa-solid ${
                   showPassword ? "fa-eye-slash" : "fa-eye"
                 } absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition`}
-                onClick={() => !loading && setShowPassword(!showPassword)}
+                onClick={() => !loading && !success && setShowPassword(!showPassword)}
               ></i>
             </div>
             {fieldErrors.password && (
@@ -172,9 +192,9 @@ export default function Register() {
           {/* Register Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className={`w-full py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2 mt-6 ${
-              loading
+              loading || success
                 ? "bg-green-400 cursor-not-allowed opacity-75"
                 : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
             } text-white`}
@@ -202,6 +222,11 @@ export default function Register() {
                   ></path>
                 </svg>
                 <span>Creating account...</span>
+              </>
+            ) : success ? (
+              <>
+                <i className="fa-solid fa-check-circle"></i>
+                <span>Account Created!</span>
               </>
             ) : (
               <>

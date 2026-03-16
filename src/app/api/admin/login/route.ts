@@ -1,59 +1,60 @@
 export const runtime = "nodejs";
 
-import { pool } from "../../../lib/db";
+import { pool } from "../../../../lib/db";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, remember } = await req.json();
+    const { email, password } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json(
         { error: "Invalid credentials" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const user = result.rows[0];
+
+    // Check if user is admin
+    if (!user.is_admin) {
+      return NextResponse.json(
+        { error: "Admin access denied" },
+        { status: 403 }
+      );
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return NextResponse.json(
         { error: "Invalid credentials" },
-        { status: 401 },
-      );
-    }
-
-    // Check if user account is active
-    if (!user.is_active) {
-      return NextResponse.json(
-        { error: "Your account has been deactivated. Please contact support." },
-        { status: 403 },
+        { status: 401 }
       );
     }
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1d" },
+      { expiresIn: "1d" }
     );
 
     const response = NextResponse.json({
-      message: "Login successful",
+      message: "Admin login successful",
       user: {
         id: user.id,
         email: user.email,
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       path: "/",
-      maxAge: remember ? 60 * 60 * 24 * 30 : 60 * 60 * 2, // 30 days vs 2 hours
+      maxAge: 60 * 60 * 2, // 2 hours for admin
     });
 
     return response;

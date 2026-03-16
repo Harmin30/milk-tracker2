@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   async function loadDashboard() {
     try {
-      const res = await fetch("/api/milk");
+      const res = await fetch("/api/milk?limit=1000");
       const data = await res.json();
 
       if (res.ok) {

@@ -301,6 +301,16 @@ export default function Login() {
             Create Account
           </button>
         </a>
+
+        {/* Admin Link */}
+        <div className="border-t border-gray-200 pt-4 text-center">
+          <a
+            href="/admin/login"
+            className="text-xs text-gray-500 hover:text-gray-700 transition font-medium"
+          >
+            Admin Portal →
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -15,7 +15,9 @@ export default function AppShell({
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/forgot-password" ||
-    pathname === "/reset-password";
+    pathname === "/reset-password" ||
+    pathname === "/admin/login" ||
+    pathname.startsWith("/admin/");
 
   return (
     <>
