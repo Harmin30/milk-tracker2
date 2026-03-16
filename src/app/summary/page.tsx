@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 type SummaryData = {
   cow_liters: number;
@@ -17,6 +18,7 @@ type SummaryData = {
 };
 
 export default function Summary() {
+  const [mounted, setMounted] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,10 @@ export default function Summary() {
   const [messageType, setMessageType] = useState<
     "success" | "error" | "warning"
   >("success");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
@@ -309,7 +315,7 @@ export default function Summary() {
 
       {/* DELETE MODAL */}
 
-      {showDeleteModal && (
+      {showDeleteModal && mounted && createPortal(
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
             <div className="flex justify-center">
@@ -344,7 +350,8 @@ export default function Summary() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

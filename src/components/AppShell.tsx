@@ -4,11 +4,7 @@ import { usePathname } from "next/navigation";
 import BottomNav from "./BottomNav";
 import Header from "./Header";
 
-export default function AppShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const hideNav =
@@ -23,9 +19,7 @@ export default function AppShell({
     <>
       {!hideNav && <Header />}
 
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {!hideNav && <BottomNav />}
     </>

@@ -28,7 +28,7 @@ export async function verifyAdminAccess(req: Request) {
 
   const result = await pool.query(
     "SELECT id, email, is_admin FROM users WHERE id = $1",
-    [admin.userId]
+    [admin.userId],
   );
 
   const user = result.rows[0];

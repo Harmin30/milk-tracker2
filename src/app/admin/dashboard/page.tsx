@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 type User = {
   id: string;
@@ -71,6 +72,7 @@ type Analytics = {
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -87,6 +89,7 @@ export default function AdminDashboard() {
   } | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     fetchAdminData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -101,8 +104,8 @@ export default function AdminDashboard() {
         users.filter(
           (user) =>
             user.email.toLowerCase().includes(query) ||
-            (user.name && user.name.toLowerCase().includes(query))
-        )
+            (user.name && user.name.toLowerCase().includes(query)),
+        ),
       );
     }
   }, [searchQuery, users]);
@@ -180,9 +183,9 @@ export default function AdminDashboard() {
         if (handleAuthError(res.status)) return;
         throw new Error("Failed to update user status");
       }
-      
+
       setMessage(
-        `User ${newStatus ? "activated" : "deactivated"} successfully`
+        `User ${newStatus ? "activated" : "deactivated"} successfully`,
       );
       fetchAdminData();
       setTimeout(() => setMessage(""), 3000);
@@ -261,7 +264,9 @@ export default function AdminDashboard() {
                   <span className="text-2xl">🥛</span>
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+                    Admin Dashboard
+                  </h1>
                   <p className="text-slate-200 text-xs sm:text-sm hidden sm:block">
                     Milk Tracker Management System
                   </p>
@@ -351,7 +356,9 @@ export default function AdminDashboard() {
                 {analytics.monthly_trend.map((item) => (
                   <div key={item.month}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-gray-600">{item.month}</span>
+                      <span className="text-sm text-gray-600">
+                        {item.month}
+                      </span>
                       <span className="text-sm font-semibold text-gray-800">
                         {item.entries} entries
                       </span>
@@ -362,7 +369,7 @@ export default function AdminDashboard() {
                         style={{
                           width: `${Math.min(
                             (item.entries / 1000) * 100,
-                            100
+                            100,
                           )}%`,
                         }}
                       />
@@ -420,65 +427,75 @@ export default function AdminDashboard() {
                   <tbody className="divide-y">
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                        <td
+                          colSpan={5}
+                          className="px-6 py-8 text-center text-gray-500"
+                        >
                           No users found
                         </td>
                       </tr>
                     ) : (
                       filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
-                          {user.email}
-                        </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700">
-                          {user.name || "—"}
-                        </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
-                          <span
-                            className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold inline-block ${
-                              user.is_active
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {user.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => fetchUserDetails(user.id)}
-                              className="px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-                            >
-                              Details
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleToggleUserStatus(user.id, !user.is_active)
-                              }
-                              className={`px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs transition ${
+                        <tr key={user.id} className="hover:bg-gray-50">
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
+                            {user.email}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700">
+                            {user.name || "—"}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                            <span
+                              className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold inline-block ${
                                 user.is_active
-                                  ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                  : "bg-green-100 text-green-700 hover:bg-green-200"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
                               }`}
                             >
-                              {user.is_active ? "Deactivate" : "Activate"}
-                            </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({ userId: user.id, email: user.email })
-                              }
-                              className="px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs bg-red-600 text-white hover:bg-red-700 transition"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )))}
+                              {user.is_active ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => fetchUserDetails(user.id)}
+                                className="px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                              >
+                                Details
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleToggleUserStatus(
+                                    user.id,
+                                    !user.is_active,
+                                  )
+                                }
+                                className={`px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs transition ${
+                                  user.is_active
+                                    ? "bg-red-100 text-red-700 hover:bg-red-200"
+                                    : "bg-green-100 text-green-700 hover:bg-green-200"
+                                }`}
+                              >
+                                {user.is_active ? "Deactivate" : "Activate"}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    userId: user.id,
+                                    email: user.email,
+                                  })
+                                }
+                                className="px-2 sm:px-3 py-1 sm:py-2 rounded font-medium text-xs bg-red-600 text-white hover:bg-red-700 transition"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -492,28 +509,47 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 filteredUsers.map((user) => (
-                  <div key={user.id} className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+                  <div
+                    key={user.id}
+                    className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500"
+                  >
                     <div className="mb-3">
                       <p className="text-xs text-gray-500 font-medium">Email</p>
-                      <p className="text-sm font-semibold text-gray-900 break-all">{user.email}</p>
+                      <p className="text-sm font-semibold text-gray-900 break-all">
+                        {user.email}
+                      </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <p className="text-xs text-gray-500 font-medium">Name</p>
-                        <p className="text-sm text-gray-700">{user.name || "—"}</p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Name
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {user.name || "—"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-medium">Phone</p>
-                        <p className="text-sm text-gray-700">{user.mobile || "—"}</p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Phone
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {user.mobile || "—"}
+                        </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <p className="text-xs text-gray-500 font-medium">Joined</p>
-                        <p className="text-sm text-gray-700">{new Date(user.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Joined
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-medium">Status</p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Status
+                        </p>
                         <span
                           className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
                             user.is_active
@@ -547,7 +583,10 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           onClick={() =>
-                            setDeleteConfirm({ userId: user.id, email: user.email })
+                            setDeleteConfirm({
+                              userId: user.id,
+                              email: user.email,
+                            })
                           }
                           className="flex-1 px-2 py-2 rounded font-medium text-xs bg-red-600 text-white hover:bg-red-700 transition"
                         >
@@ -563,17 +602,19 @@ export default function AdminDashboard() {
         )}
 
         {/* Delete Confirmation Modal */}
-        {deleteConfirm && (
+        {deleteConfirm && mounted && createPortal(
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-sm w-full">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">
                 Delete User Account?
               </h3>
               <p className="text-gray-600 mb-2 text-sm">
-                Email: <strong className="break-all">{deleteConfirm.email}</strong>
+                Email:{" "}
+                <strong className="break-all">{deleteConfirm.email}</strong>
               </p>
               <p className="text-red-600 text-xs sm:text-sm font-medium mb-6">
-                ⚠️ This will permanently delete the account and all associated milk entries. This action cannot be undone.
+                ⚠️ This will permanently delete the account and all associated
+                milk entries. This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
@@ -590,11 +631,12 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* User Details Modal */}
-        {selectedUser && (
+        {selectedUser && mounted && createPortal(
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
@@ -603,7 +645,9 @@ export default function AdminDashboard() {
                   <h2 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
                     {selectedUser.user.name || "User Details"}
                   </h2>
-                  <p className="text-gray-600 text-xs sm:text-sm mt-1 break-all">{selectedUser.user.email}</p>
+                  <p className="text-gray-600 text-xs sm:text-sm mt-1 break-all">
+                    {selectedUser.user.email}
+                  </p>
                 </div>
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -614,67 +658,121 @@ export default function AdminDashboard() {
               </div>
 
               {loadingUserDetails ? (
-                <div className="text-center py-12 text-gray-600">Loading user details...</div>
+                <div className="text-center py-12 text-gray-600">
+                  Loading user details...
+                </div>
               ) : (
                 <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
                   {/* User Profile */}
                   <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-4 sm:p-6 border border-orange-200">
-                    <h3 className="font-bold text-gray-900 mb-4 text-lg">👤 Profile Information</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 text-lg">
+                      👤 Profile Information
+                    </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Email</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-medium break-all">{selectedUser.user.email}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Email
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-medium break-all">
+                          {selectedUser.user.email}
+                        </p>
                       </div>
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Name</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-medium">{selectedUser.user.name || "—"}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Name
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-medium">
+                          {selectedUser.user.name || "—"}
+                        </p>
                       </div>
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Phone</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-medium">{selectedUser.user.mobile || "—"}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Phone
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-medium">
+                          {selectedUser.user.mobile || "—"}
+                        </p>
                       </div>
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Address</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-medium">{selectedUser.user.address || "—"}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Address
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-medium">
+                          {selectedUser.user.address || "—"}
+                        </p>
                       </div>
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Default Cow Price</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-bold">₹{Number(selectedUser.user.default_cow_price).toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Default Cow Price
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-bold">
+                          ₹
+                          {Number(selectedUser.user.default_cow_price).toFixed(
+                            2,
+                          )}
+                        </p>
                       </div>
                       <div className="bg-white rounded p-3">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Default Buffalo Price</p>
-                        <p className="text-sm sm:text-base text-gray-900 font-bold">₹{Number(selectedUser.user.default_buffalo_price).toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Default Buffalo Price
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-900 font-bold">
+                          ₹
+                          {Number(
+                            selectedUser.user.default_buffalo_price,
+                          ).toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Statistics */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                    <StatBox label="Total Entries" value={selectedUser.stats.total_entries} />
-                    <StatBox label="Total Liters" value={Number(selectedUser.stats.total_liters || 0).toFixed(2)} unit="L" />
-                    <StatBox label="Total Revenue" value={`₹${Number(selectedUser.stats.total_revenue || 0).toFixed(2)}`} />
-                    <StatBox 
-                      label="Last Entry" 
-                      value={selectedUser.stats.last_entry_date 
-                        ? new Date(selectedUser.stats.last_entry_date).toLocaleDateString()
-                        : "—"}
+                    <StatBox
+                      label="Total Entries"
+                      value={selectedUser.stats.total_entries}
+                    />
+                    <StatBox
+                      label="Total Liters"
+                      value={Number(
+                        selectedUser.stats.total_liters || 0,
+                      ).toFixed(2)}
+                      unit="L"
+                    />
+                    <StatBox
+                      label="Total Revenue"
+                      value={`₹${Number(selectedUser.stats.total_revenue || 0).toFixed(2)}`}
+                    />
+                    <StatBox
+                      label="Last Entry"
+                      value={
+                        selectedUser.stats.last_entry_date
+                          ? new Date(
+                              selectedUser.stats.last_entry_date,
+                            ).toLocaleDateString()
+                          : "—"
+                      }
                     />
                   </div>
 
                   {/* Account Metrics */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                    <StatBox 
-                      label="Account Age" 
-                      value={Math.floor(selectedUser.stats.account_age_days / 30)} 
+                    <StatBox
+                      label="Account Age"
+                      value={Math.floor(
+                        selectedUser.stats.account_age_days / 30,
+                      )}
                       unit="months"
                     />
-                    <StatBox 
-                      label="Active Days" 
-                      value={selectedUser.stats.unique_entry_days} 
+                    <StatBox
+                      label="Active Days"
+                      value={selectedUser.stats.unique_entry_days}
                     />
-                    <StatBox 
-                      label="Avg per Entry" 
-                      value={Number(selectedUser.stats.avg_liters_per_entry).toFixed(2)} 
+                    <StatBox
+                      label="Avg per Entry"
+                      value={Number(
+                        selectedUser.stats.avg_liters_per_entry,
+                      ).toFixed(2)}
                       unit="L"
                     />
                   </div>
@@ -682,14 +780,26 @@ export default function AdminDashboard() {
                   {/* Monthly Trends */}
                   {selectedUser.monthlyTrends.length > 0 && (
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-3 text-lg">📈 Monthly Activity</h3>
+                      <h3 className="font-bold text-gray-900 mb-3 text-lg">
+                        📈 Monthly Activity
+                      </h3>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-2">
                         {selectedUser.monthlyTrends.map((month) => {
-                          const monthStr = new Date(month.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                          const monthStr = new Date(
+                            month.month,
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
+                          });
                           return (
-                            <div key={month.month} className="bg-gradient-to-r from-blue-50 to-blue-100 rounded p-3 border border-blue-200">
+                            <div
+                              key={month.month}
+                              className="bg-gradient-to-r from-blue-50 to-blue-100 rounded p-3 border border-blue-200"
+                            >
                               <div className="flex justify-between items-center mb-2">
-                                <p className="font-medium text-gray-900 text-sm sm:text-base">{monthStr}</p>
+                                <p className="font-medium text-gray-900 text-sm sm:text-base">
+                                  {monthStr}
+                                </p>
                                 <span className="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-700 rounded">
                                   {month.entry_count} entries
                                 </span>
@@ -697,11 +807,15 @@ export default function AdminDashboard() {
                               <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
                                 <div>
                                   <p className="text-gray-600">Liters</p>
-                                  <p className="text-gray-900 font-semibold">{Number(month.total_liters).toFixed(2)} L</p>
+                                  <p className="text-gray-900 font-semibold">
+                                    {Number(month.total_liters).toFixed(2)} L
+                                  </p>
                                 </div>
                                 <div>
                                   <p className="text-gray-600">Revenue</p>
-                                  <p className="text-gray-900 font-semibold">₹{Number(month.total_amount).toFixed(2)}</p>
+                                  <p className="text-gray-900 font-semibold">
+                                    ₹{Number(month.total_amount).toFixed(2)}
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -714,26 +828,50 @@ export default function AdminDashboard() {
                   {/* Recent Entries */}
                   {selectedUser.recentEntries.length > 0 && (
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-3 text-lg">📝 Recent Entries</h3>
+                      <h3 className="font-bold text-gray-900 mb-3 text-lg">
+                        📝 Recent Entries
+                      </h3>
                       <div className="overflow-x-auto rounded-lg border border-gray-200">
                         <table className="w-full text-xs sm:text-sm">
                           <thead className="bg-gray-900 text-white sticky top-0">
                             <tr>
-                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">Date</th>
-                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">Type</th>
-                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">Liters</th>
-                              <th className="px-2 sm:px-3 py-2 text-right font-semibold hidden sm:table-cell">Price/L</th>
-                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">Amount</th>
+                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">
+                                Date
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">
+                                Type
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">
+                                Liters
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-right font-semibold hidden sm:table-cell">
+                                Price/L
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">
+                                Amount
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
                             {selectedUser.recentEntries.map((entry) => (
                               <tr key={entry.id} className="hover:bg-gray-50">
-                                <td className="px-2 sm:px-3 py-2 text-gray-900 font-medium">{new Date(entry.date).toLocaleDateString('en-IN')}</td>
-                                <td className="px-2 sm:px-3 py-2 text-gray-600 capitalize font-medium">{entry.milk_type}</td>
-                                <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-semibold">{Number(entry.liters).toFixed(2)}</td>
-                                <td className="px-2 sm:px-3 py-2 text-right text-gray-600 hidden sm:table-cell">₹{Number(entry.price_per_liter).toFixed(2)}</td>
-                                <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-bold">₹{Number(entry.total_amount).toFixed(2)}</td>
+                                <td className="px-2 sm:px-3 py-2 text-gray-900 font-medium">
+                                  {new Date(entry.date).toLocaleDateString(
+                                    "en-IN",
+                                  )}
+                                </td>
+                                <td className="px-2 sm:px-3 py-2 text-gray-600 capitalize font-medium">
+                                  {entry.milk_type}
+                                </td>
+                                <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-semibold">
+                                  {Number(entry.liters).toFixed(2)}
+                                </td>
+                                <td className="px-2 sm:px-3 py-2 text-right text-gray-600 hidden sm:table-cell">
+                                  ₹{Number(entry.price_per_liter).toFixed(2)}
+                                </td>
+                                <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-bold">
+                                  ₹{Number(entry.total_amount).toFixed(2)}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -744,31 +882,52 @@ export default function AdminDashboard() {
 
                   {/* Milk Type Breakdown */}
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">🥛 Milk Type Breakdown</h3>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">
+                      🥛 Milk Type Breakdown
+                    </h3>
                     <div className="space-y-2">
                       {selectedUser.breakdown.length === 0 ? (
-                        <p className="text-sm text-gray-600 bg-gray-50 rounded p-3">No entries yet</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 rounded p-3">
+                          No entries yet
+                        </p>
                       ) : (
                         selectedUser.breakdown.map((item) => (
-                          <div key={item.milk_type} className="bg-gradient-to-r from-orange-50 to-amber-50 rounded p-3 sm:p-4 border border-orange-200">
+                          <div
+                            key={item.milk_type}
+                            className="bg-gradient-to-r from-orange-50 to-amber-50 rounded p-3 sm:p-4 border border-orange-200"
+                          >
                             <div className="flex justify-between items-center mb-3">
-                              <p className="font-semibold text-gray-900 text-sm sm:text-base capitalize">{item.milk_type} Milk</p>
+                              <p className="font-semibold text-gray-900 text-sm sm:text-base capitalize">
+                                {item.milk_type} Milk
+                              </p>
                               <span className="text-xs font-bold px-2 py-1 bg-orange-200 text-orange-700 rounded">
                                 {item.entry_count} entries
                               </span>
                             </div>
                             <div className="grid grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm">
                               <div className="bg-white rounded p-2 text-center">
-                                <p className="text-gray-600 text-xs font-medium">Total Liters</p>
-                                <p className="text-gray-900 font-bold text-sm sm:text-base">{Number(item.total_liters || 0).toFixed(2)} L</p>
+                                <p className="text-gray-600 text-xs font-medium">
+                                  Total Liters
+                                </p>
+                                <p className="text-gray-900 font-bold text-sm sm:text-base">
+                                  {Number(item.total_liters || 0).toFixed(2)} L
+                                </p>
                               </div>
                               <div className="bg-white rounded p-2 text-center">
-                                <p className="text-gray-600 text-xs font-medium">Total Amount</p>
-                                <p className="text-gray-900 font-bold text-sm sm:text-base">₹{Number(item.total_amount || 0).toFixed(2)}</p>
+                                <p className="text-gray-600 text-xs font-medium">
+                                  Total Amount
+                                </p>
+                                <p className="text-gray-900 font-bold text-sm sm:text-base">
+                                  ₹{Number(item.total_amount || 0).toFixed(2)}
+                                </p>
                               </div>
                               <div className="bg-white rounded p-2 text-center">
-                                <p className="text-gray-600 text-xs font-medium">Avg Price</p>
-                                <p className="text-gray-900 font-bold text-sm sm:text-base">₹{Number(item.avg_price || 0).toFixed(2)}/L</p>
+                                <p className="text-gray-600 text-xs font-medium">
+                                  Avg Price
+                                </p>
+                                <p className="text-gray-900 font-bold text-sm sm:text-base">
+                                  ₹{Number(item.avg_price || 0).toFixed(2)}/L
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -780,26 +939,52 @@ export default function AdminDashboard() {
                   {/* Bills Generated */}
                   {selectedUser.bills.length > 0 && (
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-3 text-lg">📄 Bills Generated</h3>
+                      <h3 className="font-bold text-gray-900 mb-3 text-lg">
+                        📄 Bills Generated
+                      </h3>
                       <div className="overflow-x-auto rounded-lg border border-gray-200">
                         <table className="w-full text-xs sm:text-sm">
                           <thead className="bg-gray-900 text-white">
                             <tr>
-                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">Bill Type</th>
-                              <th className="px-2 sm:px-3 py-2 text-left font-semibold hidden sm:table-cell">Period</th>
-                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">Amount</th>
-                              <th className="px-2 sm:px-3 py-2 text-left font-semibold hidden sm:table-cell">Generated</th>
+                              <th className="px-2 sm:px-3 py-2 text-left font-semibold">
+                                Bill Type
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-left font-semibold hidden sm:table-cell">
+                                Period
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-right font-semibold">
+                                Amount
+                              </th>
+                              <th className="px-2 sm:px-3 py-2 text-left font-semibold hidden sm:table-cell">
+                                Generated
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
                             {selectedUser.bills.map((bill) => {
-                              const monthName = new Date(bill.year, bill.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                              const monthName = new Date(
+                                bill.year,
+                                bill.month - 1,
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                year: "numeric",
+                              });
                               return (
                                 <tr key={bill.id} className="hover:bg-gray-50">
-                                  <td className="px-2 sm:px-3 py-2 text-gray-900 font-medium capitalize">{bill.bill_type}</td>
-                                  <td className="px-2 sm:px-3 py-2 text-gray-600 hidden sm:table-cell">{monthName}</td>
-                                  <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-bold">₹{Number(bill.total_amount).toFixed(2)}</td>
-                                  <td className="px-2 sm:px-3 py-2 text-gray-600 hidden sm:table-cell text-xs">{new Date(bill.created_at).toLocaleDateString()}</td>
+                                  <td className="px-2 sm:px-3 py-2 text-gray-900 font-medium capitalize">
+                                    {bill.bill_type}
+                                  </td>
+                                  <td className="px-2 sm:px-3 py-2 text-gray-600 hidden sm:table-cell">
+                                    {monthName}
+                                  </td>
+                                  <td className="px-2 sm:px-3 py-2 text-right text-gray-900 font-bold">
+                                    ₹{Number(bill.total_amount).toFixed(2)}
+                                  </td>
+                                  <td className="px-2 sm:px-3 py-2 text-gray-600 hidden sm:table-cell text-xs">
+                                    {new Date(
+                                      bill.created_at,
+                                    ).toLocaleDateString()}
+                                  </td>
                                 </tr>
                               );
                             })}
@@ -821,7 +1006,8 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>
@@ -841,8 +1027,12 @@ function StatCard({
     <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-orange-500">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-gray-600 text-xs sm:text-sm font-medium">{label}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-gray-600 text-xs sm:text-sm font-medium">
+            {label}
+          </p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">
+            {value}
+          </p>
         </div>
         <div className="text-3xl sm:text-4xl">{icon}</div>
       </div>

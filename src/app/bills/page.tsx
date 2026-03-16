@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Bill = {
   id: string;
@@ -14,6 +15,7 @@ type Bill = {
 };
 
 export default function BillsPage() {
+  const [mounted, setMounted] = useState(false);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +53,8 @@ export default function BillsPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMounted(true);
     loadBills();
   }, []);
 
@@ -510,7 +514,7 @@ export default function BillsPage() {
         </div>
       </div>
 
-      {deleteId && (
+      {deleteId && mounted && createPortal(
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
             <div className="flex justify-center">
@@ -543,7 +547,8 @@ export default function BillsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

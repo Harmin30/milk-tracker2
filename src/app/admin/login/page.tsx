@@ -52,10 +52,16 @@ export default function AdminLogin() {
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-block bg-gradient-to-r from-orange-500 to-red-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
-            <span className="text-white font-semibold text-xs sm:text-sm">ADMIN PANEL</span>
+            <span className="text-white font-semibold text-xs sm:text-sm">
+              ADMIN PANEL
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Admin Access</h1>
-          <p className="text-gray-400 text-xs sm:text-sm">Manage the Milk Tracker app</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            Admin Access
+          </h1>
+          <p className="text-gray-400 text-xs sm:text-sm">
+            Manage the Milk Tracker app
+          </p>
         </div>
 
         {/* Login Card */}
@@ -116,7 +122,9 @@ export default function AdminLogin() {
 
           {/* Back to User Login */}
           <div className="mt-6 text-center border-t border-slate-700 pt-6">
-            <p className="text-gray-400 text-xs sm:text-sm mb-3">Regular user?</p>
+            <p className="text-gray-400 text-xs sm:text-sm mb-3">
+              Regular user?
+            </p>
             <Link
               href="/login"
               className="text-orange-400 hover:text-orange-300 font-medium transition text-sm sm:text-base"

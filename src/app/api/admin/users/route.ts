@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
     if (!userId || is_active === undefined) {
       return NextResponse.json(
         { error: "userId and is_active are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +73,7 @@ export async function DELETE(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "userId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

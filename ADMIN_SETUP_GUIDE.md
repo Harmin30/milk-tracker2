@@ -1,13 +1,16 @@
 # 🔐 Admin Dashboard Setup Guide
 
 ## Overview
+
 A complete admin dashboard system has been built for the Milk Tracker app. It allows admins to:
+
 - View user count and list all users
 - See analytics and trends
 - Deactivate/activate users
 - Monitor daily/monthly activities
 
 ## ✅ Safety Features
+
 - **No existing user logic changed** - all existing flows work as before
 - **Separate admin login** - users and admins use different pages
 - **Backward compatible** - new database columns default to safe values
@@ -16,6 +19,7 @@ A complete admin dashboard system has been built for the Milk Tracker app. It al
 ## 🚀 Setup Steps
 
 ### Step 1: Database Migration (CRITICAL)
+
 Run these SQL queries in your PostgreSQL database:
 
 ```sql
@@ -29,6 +33,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
 **File reference:** See `ADMIN_MIGRATION.sql` in project root for the exact queries.
 
 ### Step 2: Set Admin User
+
 After running the migration, execute this query to set your admin:
 
 ```sql
@@ -36,7 +41,9 @@ UPDATE users SET is_admin = TRUE WHERE email = 'your-email@example.com';
 ```
 
 ### Step 3: Deploy the Code
+
 All new files are already created:
+
 - `/src/app/admin/login/page.tsx` - Admin login page
 - `/src/app/admin/dashboard/page.tsx` - Admin dashboard
 - `/src/app/api/admin/login/route.ts` - Admin authentication
@@ -45,6 +52,7 @@ All new files are already created:
 - `/src/lib/adminAuth.ts` - Admin auth utilities
 
 ### Step 4: Test
+
 1. Go to `/admin/login` (or click "Admin Portal →" on the login page)
 2. Login with your admin email & password
 3. You should see the admin dashboard with user stats
@@ -52,18 +60,21 @@ All new files are already created:
 ## 📱 Pages & Routes
 
 ### User Side (Unchanged)
+
 - `/login` - Regular user login
 - `/register` - User registration
 - `/dashboard` - User dashboard
 - All other existing pages work as before
 
 ### Admin Side (New)
+
 - `/admin/login` - Admin login page
 - `/admin/dashboard` - Admin dashboard with:
   - 📊 Overview tab: stats and trends
   - 👥 Users tab: manage all users
 
 ### API Routes (New)
+
 - `POST /api/admin/login` - Admin login authentication
 - `GET /api/admin/analytics` - Get dashboard analytics
 - `GET /api/admin/users` - List all users
@@ -72,7 +83,9 @@ All new files are already created:
 ## 🎯 Admin Dashboard Features
 
 ### Overview Tab
+
 Shows:
+
 - Total Users count
 - Active Users
 - Total Milk Entries recorded
@@ -80,7 +93,9 @@ Shows:
 - 📈 Monthly Activity Trend (last 12 months)
 
 ### Users Tab
+
 Shows table with:
+
 - User email & name
 - Mobile number
 - Join date
@@ -97,17 +112,19 @@ Shows table with:
 ## 🚫 Deactivating Users
 
 When you deactivate a user:
+
 - Their `is_active` flag is set to FALSE
 - This is recorded in the database
 - Currently, user can still login (optional: you can add this restriction later)
 
 To add login restriction for inactive users (optional, future enhancement):
+
 ```typescript
 // In /api/login/route.ts, after password check, add:
 if (!user.is_active) {
   return NextResponse.json(
     { error: "Your account has been deactivated" },
-    { status: 403 }
+    { status: 403 },
   );
 }
 ```
@@ -133,16 +150,19 @@ if (!user.is_active) {
 ## 🆘 Troubleshooting
 
 ### "Admin access denied" error
+
 - Make sure you ran the `UPDATE users SET is_admin = TRUE` query
 - Check you're using the correct admin email
 - Verify the database migration was applied
 
 ### Page shows "Loading dashboard..."
+
 - Check browser console for errors
 - Verify admin token is set in cookies
 - Ensure you're logged in as admin
 
 ### Users list is empty
+
 - This is normal if app is new
 - Register a few test users as regular users
 - They should appear in admin dashboard

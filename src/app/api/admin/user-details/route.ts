@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "userId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       FROM users
       WHERE id = $1 AND is_admin = FALSE
       `,
-      [userId]
+      [userId],
     );
 
     if (userRes.rows.length === 0) {
@@ -56,7 +56,7 @@ export async function GET(req: Request) {
       FROM milk_entries
       WHERE user_id = $1
       `,
-      [userId]
+      [userId],
     );
 
     const entries = entriesRes.rows[0];
@@ -74,7 +74,7 @@ export async function GET(req: Request) {
       WHERE user_id = $1
       GROUP BY milk_type
       `,
-      [userId]
+      [userId],
     );
 
     // Get last entry date
@@ -86,7 +86,7 @@ export async function GET(req: Request) {
       ORDER BY date DESC
       LIMIT 1
       `,
-      [userId]
+      [userId],
     );
 
     const lastEntry = lastEntryRes.rows[0];
@@ -106,7 +106,7 @@ export async function GET(req: Request) {
       ORDER BY date DESC
       LIMIT 5
       `,
-      [userId]
+      [userId],
     );
 
     // Get monthly trends
@@ -123,7 +123,7 @@ export async function GET(req: Request) {
       ORDER BY month DESC
       LIMIT 6
       `,
-      [userId]
+      [userId],
     );
 
     // Get performance metrics
@@ -136,7 +136,7 @@ export async function GET(req: Request) {
       FROM milk_entries
       WHERE user_id = $1
       `,
-      [userId]
+      [userId],
     );
 
     const metrics = metricsRes.rows[0];
@@ -160,7 +160,7 @@ export async function GET(req: Request) {
       ORDER BY created_at DESC
       LIMIT 10
       `,
-      [userId]
+      [userId],
     );
 
     return NextResponse.json({

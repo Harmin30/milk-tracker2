@@ -13,13 +13,13 @@ export async function GET(req: Request) {
 
     // Total users count
     const totalUsersRes = await pool.query(
-      "SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE"
+      "SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE",
     );
     const total_users = Number(totalUsersRes.rows[0].count);
 
     // Active users count
     const activeUsersRes = await pool.query(
-      "SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE AND is_active = TRUE"
+      "SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE AND is_active = TRUE",
     );
     const active_users = Number(activeUsersRes.rows[0].count);
 
@@ -28,13 +28,13 @@ export async function GET(req: Request) {
 
     // Total milk entries
     const totalEntriesRes = await pool.query(
-      "SELECT COUNT(*) as count FROM milk_entries"
+      "SELECT COUNT(*) as count FROM milk_entries",
     );
     const total_milk_entries = Number(totalEntriesRes.rows[0].count);
 
     // Today's entries
     const todayRes = await pool.query(
-      "SELECT COUNT(*) as count FROM milk_entries WHERE DATE(date) = CURRENT_DATE"
+      "SELECT COUNT(*) as count FROM milk_entries WHERE DATE(date) = CURRENT_DATE",
     );
     const today_entries = Number(todayRes.rows[0].count);
 

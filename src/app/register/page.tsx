@@ -112,13 +112,20 @@ export default function Register() {
           <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 text-green-700 p-4 rounded-xl flex items-start gap-3 shadow-lg animate-pulse">
             <div className="text-2xl flex-shrink-0">✅</div>
             <div className="flex-1">
-              <p className="font-semibold text-sm">Account Created Successfully!</p>
-              <p className="text-xs text-green-600 mt-1">Redirecting to login page...</p>
+              <p className="font-semibold text-sm">
+                Account Created Successfully!
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                Redirecting to login page...
+              </p>
             </div>
           </div>
         )}
 
-        <form onSubmit={handleRegister} className={`space-y-4 ${success ? "opacity-50 pointer-events-none" : ""}`}>
+        <form
+          onSubmit={handleRegister}
+          className={`space-y-4 ${success ? "opacity-50 pointer-events-none" : ""}`}
+        >
           {/* Email */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">
@@ -178,7 +185,9 @@ export default function Register() {
                 className={`fa-solid ${
                   showPassword ? "fa-eye-slash" : "fa-eye"
                 } absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition`}
-                onClick={() => !loading && !success && setShowPassword(!showPassword)}
+                onClick={() =>
+                  !loading && !success && setShowPassword(!showPassword)
+                }
               ></i>
             </div>
             {fieldErrors.password && (
