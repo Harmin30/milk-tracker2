@@ -18,6 +18,8 @@ function EntriesPage() {
 
   const [cowPrice, setCowPrice] = useState(0);
   const [buffaloPrice, setBuffaloPrice] = useState(0);
+  const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
+  const [brandMilkPrice, setBrandMilkPrice] = useState(0);
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
@@ -26,6 +28,7 @@ function EntriesPage() {
 
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [hasAnyEntries, setHasAnyEntries] = useState(true); // Default to true to hide banner until we check
 
   // Auto-dismiss success messages after 3 seconds
   useEffect(() => {
@@ -37,21 +40,35 @@ function EntriesPage() {
     }
   }, [message, messageType]);
 
-  // Load profile prices
+  // Load profile prices and check if user has any entries
   useEffect(() => {
     async function loadProfile() {
-      const res = await fetch("/api/profile");
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
 
-      if (res.ok && data.data) {
-        setCowPrice(data.data.default_cow_price || 0);
-        setBuffaloPrice(data.data.default_buffalo_price || 0);
+        if (res.ok && data.data) {
+          setCowPrice(data.data.default_cow_price || 0);
+          setBuffaloPrice(data.data.default_buffalo_price || 0);
+          setBrandMilkName(data.data.brand_milk_name || "Packaged Milk");
+          setBrandMilkPrice(data.data.default_brand_price || 0);
 
-        if (milkType === "cow") {
-          setPrice(String(data.data.default_cow_price || ""));
-        } else {
-          setPrice(String(data.data.default_buffalo_price || ""));
+          if (milkType === "cow") {
+            setPrice(String(data.data.default_cow_price || ""));
+          } else if (milkType === "packaged") {
+            setPrice(String(data.data.default_brand_price || ""));
+          } else {
+            setPrice(String(data.data.default_buffalo_price || ""));
+          }
         }
+
+        // Check if user has any entries
+        const entriesRes = await fetch("/api/milk?limit=1");
+        const entriesData = await entriesRes.json();
+        setHasAnyEntries((entriesData.total || 0) > 0);
+      } catch (err) {
+        console.log(err);
+        setHasAnyEntries(true); // Default to true on error to hide banner
       }
     }
 
@@ -103,10 +120,12 @@ function EntriesPage() {
   useEffect(() => {
     if (milkType === "cow") {
       setPrice((cowPrice ?? 0).toString());
+    } else if (milkType === "packaged") {
+      setPrice((brandMilkPrice ?? 0).toString());
     } else {
       setPrice((buffaloPrice ?? 0).toString());
     }
-  }, [milkType, cowPrice, buffaloPrice]);
+  }, [milkType, cowPrice, buffaloPrice, brandMilkPrice]);
 
   const total = (Number(liters) || 0) * (Number(price) || 0);
 
@@ -124,7 +143,9 @@ function EntriesPage() {
     }
 
     if (!price || Number(price) <= 0) {
-      setMessage("Please enter a valid price per liter");
+      setMessage(
+        `Price is required. Please set default ${milkType === "cow" ? "Cow" : milkType === "buffalo" ? "Buffalo" : "Packaged Milk"} price in your Profile first.`,
+      );
       setMessageType("error");
       setLoading(false);
       return;
@@ -244,6 +265,31 @@ function EntriesPage() {
           <h1 className="text-2xl font-semibold">
             {editMode ? "Update Milk Entry" : "Add Milk Entry"}
           </h1>
+
+          {!editMode &&
+            !hasAnyEntries &&
+            !cowPrice &&
+            !buffaloPrice &&
+            !brandMilkPrice && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-3 rounded-lg flex gap-2 items-center">
+                <i className="fa-solid fa-lightbulb text-blue-600 text-base flex-shrink-0"></i>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm mb-0.5">💡 Pro Tip</p>
+                  <p className="text-xs text-blue-700">
+                    Set milk prices in your Profile to auto-fill when adding
+                    entries
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push("/profile")}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded font-medium hover:bg-blue-700 transition flex-shrink-0"
+                >
+                  Set Now →
+                </button>
+              </div>
+            )}
+
           {editMode && (
             <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm p-3 rounded-lg">
               You are editing an existing milk entry
@@ -285,35 +331,50 @@ function EntriesPage() {
                   Milk Type
                 </label>
 
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-1.5 sm:gap-2 md:gap-3 mt-2 flex-nowrap">
                   {/* Buffalo First */}
                   <button
                     type="button"
                     onClick={() => setMilkType("buffalo")}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg border text-xs sm:text-sm font-medium transition whitespace-nowrap min-h-10
         ${
           milkType === "buffalo"
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            ? "bg-gradient-to-br from-blue-300 via-blue-500 to-blue-800 text-white border-blue-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
         }`}
                   >
                     <span>🐃</span>
-                    Buffalo
+                    <span>Buffalo</span>
                   </button>
 
                   {/* Cow Second */}
                   <button
                     type="button"
                     onClick={() => setMilkType("cow")}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg border text-xs sm:text-sm font-medium transition whitespace-nowrap min-h-10
         ${
           milkType === "cow"
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            ? "bg-gradient-to-br from-green-300 via-green-500 to-green-800 text-white border-green-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-green-50 hover:border-green-300"
         }`}
                   >
                     <span>🐄</span>
-                    Cow
+                    <span>Cow</span>
+                  </button>
+
+                  {/* Packaged Milk Third */}
+                  <button
+                    type="button"
+                    onClick={() => setMilkType("packaged")}
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg border text-xs sm:text-sm font-medium transition whitespace-nowrap min-h-10
+        ${
+          milkType === "packaged"
+            ? "bg-gradient-to-br from-orange-300 via-orange-500 to-orange-800 text-white border-orange-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-orange-50 hover:border-orange-300"
+        }`}
+                  >
+                    <span>🥛</span>
+                    <span>{brandMilkName}</span>
                   </button>
                 </div>
               </div>

@@ -297,7 +297,7 @@ export default function Login() {
 
         {/* Register Link */}
         <a href="/register">
-          <button className="w-full border-2 border-gray-200 py-3 rounded-lg text-gray-700 font-semibold hover:border-blue-400 hover:bg-blue-50 transition">
+          <button className="w-full border-2 border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-500 py-3 rounded-lg text-blue-600 font-semibold transition shadow-md">
             Create Account
           </button>
         </a>

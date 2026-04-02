@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!["cow", "buffalo"].includes(milk_type)) {
+    if (!["cow", "buffalo", "packaged"].includes(milk_type)) {
       return NextResponse.json({ error: "Invalid milk type" }, { status: 400 });
     }
 
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     if (finalPrice === undefined || finalPrice === null) {
       const profile = await pool.query(
         `
-        SELECT default_cow_price, default_buffalo_price
+        SELECT default_cow_price, default_buffalo_price, default_brand_price
         FROM users
         WHERE id = $1
         `,
@@ -90,10 +90,13 @@ export async function POST(req: Request) {
         );
       }
 
-      finalPrice =
-        milk_type === "cow"
-          ? userProfile.default_cow_price
-          : userProfile.default_buffalo_price;
+      if (milk_type === "cow") {
+        finalPrice = userProfile.default_cow_price;
+      } else if (milk_type === "buffalo") {
+        finalPrice = userProfile.default_buffalo_price;
+      } else if (milk_type === "packaged") {
+        finalPrice = userProfile.default_brand_price;
+      }
 
       if (!finalPrice) {
         return NextResponse.json(

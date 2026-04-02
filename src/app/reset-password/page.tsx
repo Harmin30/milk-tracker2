@@ -221,7 +221,7 @@ export default function ResetPassword() {
         {!success && (
           <div className="mt-4">
             <Link href="/login">
-              <button className="w-full border-2 border-gray-200 py-3 rounded-lg text-gray-700 font-semibold hover:border-amber-400 hover:bg-amber-50 transition">
+              <button className="w-full border-2 border-gray-300 bg-white hover:bg-amber-50 hover:border-amber-500 py-3 rounded-lg text-amber-600 font-semibold transition shadow-md">
                 <i className="fa-solid fa-arrow-left mr-2"></i>
                 Back to Login
               </button>

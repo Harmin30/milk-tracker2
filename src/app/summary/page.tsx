@@ -6,21 +6,26 @@ import { createPortal } from "react-dom";
 type SummaryData = {
   cow_liters: number;
   buffalo_liters: number;
+  packaged_liters: number;
   cow_amount: number;
   buffalo_amount: number;
+  packaged_amount: number;
   total_liters: number;
   total_amount: number;
 
   cow_rate: number;
   buffalo_rate: number;
+  packaged_rate: number;
   cow_rate_changed: boolean;
   buffalo_rate_changed: boolean;
+  packaged_rate_changed: boolean;
 };
 
 export default function Summary() {
   const [mounted, setMounted] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [data, setData] = useState<SummaryData | null>(null);
+  const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -31,6 +36,22 @@ export default function Summary() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Load brand milk name from profile
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+        if (res.ok && data.data?.brand_milk_name) {
+          setBrandMilkName(data.data.brand_milk_name);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    loadProfile();
   }, []);
 
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -297,6 +318,31 @@ export default function Summary() {
               </p>
             </div>
 
+            {/* Packaged Milk - Show only if bought */}
+            {data.packaged_liters > 0 && (
+              <div className="flex justify-between items-center border-b pb-3">
+                <div>
+                  <p className="text-sm text-gray-500">🥛 {brandMilkName}</p>
+
+                  <div>
+                    <p className="font-semibold">{data.packaged_liters} L</p>
+                    <p className="text-xs text-gray-400">
+                      ₹ {Number(data.packaged_rate).toFixed(2)} / L{" "}
+                      {data.packaged_rate_changed && (
+                        <span className="text-[10px] text-orange-500 font-medium">
+                          (Avg)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-green-600 font-medium">
+                  ₹ {data.packaged_amount}
+                </p>
+              </div>
+            )}
+
             {/* Total */}
 
             <div className="flex justify-between items-center pt-2">
@@ -315,44 +361,46 @@ export default function Summary() {
 
       {/* DELETE MODAL */}
 
-      {showDeleteModal && mounted && createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
-            <div className="flex justify-center">
-              <div className="bg-red-100 p-3 rounded-full">
-                <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
+      {showDeleteModal &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
+              <div className="flex justify-center">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">
+                  Delete {monthLabel}?
+                </h2>
+                <p className="text-sm text-gray-500 mt-2">
+                  This will delete all milk entries and bills for {monthLabel}.
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={deleteMonthData}
+                  className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
+                >
+                  Delete
+                </button>
               </div>
             </div>
-
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">
-                Delete {monthLabel}?
-              </h2>
-              <p className="text-sm text-gray-500 mt-2">
-                This will delete all milk entries and bills for {monthLabel}.
-                This action cannot be undone.
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={deleteMonthData}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -514,42 +514,46 @@ export default function BillsPage() {
         </div>
       </div>
 
-      {deleteId && mounted && createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
-            <div className="flex justify-center">
-              <div className="bg-red-100 p-3 rounded-full">
-                <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
+      {deleteId &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
+              <div className="flex justify-center">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">
+                  Delete Bill?
+                </h2>
+                <p className="text-sm text-gray-500 mt-2">
+                  This action cannot be undone. The bill will be permanently
+                  deleted.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setDeleteId(null)}
+                  className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
+                >
+                  Delete
+                </button>
               </div>
             </div>
-
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">Delete Bill?</h2>
-              <p className="text-sm text-gray-500 mt-2">
-                This action cannot be undone. The bill will be permanently
-                deleted.
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={confirmDelete}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

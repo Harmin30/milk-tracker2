@@ -39,7 +39,9 @@ export async function GET(req: Request) {
         address,
         mobile,
         default_cow_price,
-        default_buffalo_price
+        default_buffalo_price,
+        brand_milk_name,
+        default_brand_price
       FROM users
       WHERE id = $1
       `,
@@ -59,8 +61,15 @@ export async function PUT(req: Request) {
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { name, address, mobile, default_cow_price, default_buffalo_price } =
-      await req.json();
+    const {
+      name,
+      address,
+      mobile,
+      default_cow_price,
+      default_buffalo_price,
+      brand_milk_name,
+      default_brand_price,
+    } = await req.json();
     // Validate mobile number
     if (mobile && !/^[0-9]{10}$/.test(mobile)) {
       return NextResponse.json(
@@ -83,6 +92,13 @@ export async function PUT(req: Request) {
       );
     }
 
+    if (default_brand_price !== undefined && Number(default_brand_price) < 0) {
+      return NextResponse.json(
+        { error: "Invalid brand milk price" },
+        { status: 400 },
+      );
+    }
+
     await pool.query(
       `
 UPDATE users
@@ -91,8 +107,10 @@ SET
   address = $2,
   mobile = $3,
   default_cow_price = $4,
-  default_buffalo_price = $5
-WHERE id = $6
+  default_buffalo_price = $5,
+  brand_milk_name = $6,
+  default_brand_price = $7
+WHERE id = $8
 `,
       [
         name ?? null,
@@ -100,6 +118,8 @@ WHERE id = $6
         mobile ?? null,
         default_cow_price ?? null,
         default_buffalo_price ?? null,
+        brand_milk_name ?? "Packaged Milk",
+        default_brand_price ?? null,
         user.userId,
       ],
     );

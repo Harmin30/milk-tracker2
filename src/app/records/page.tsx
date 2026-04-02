@@ -21,9 +21,9 @@ export default function Records() {
   const [deleting, setDeleting] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
 
-  const [milkFilter, setMilkFilter] = useState<"all" | "cow" | "buffalo">(
-    "all",
-  );
+  const [milkFilter, setMilkFilter] = useState<
+    "all" | "cow" | "buffalo" | "packaged"
+  >("all");
   const [dateFilter, setDateFilter] = useState<
     "all" | "today" | "week" | "month"
   >("all");
@@ -36,6 +36,23 @@ export default function Records() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 6;
+  const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
+
+  // Load brand milk name from profile
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+        if (res.ok && data.data?.brand_milk_name) {
+          setBrandMilkName(data.data.brand_milk_name);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    loadProfile();
+  }, []);
 
   async function loadRecords(page = 1) {
     try {
@@ -303,6 +320,17 @@ export default function Records() {
               >
                 🐄 Cow
               </button>
+
+              <button
+                onClick={() => setMilkFilter("packaged")}
+                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
+                  milkFilter === "packaged"
+                    ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white border-orange-600 shadow-sm"
+                    : "bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200"
+                }`}
+              >
+                🥛 Packaged
+              </button>
             </div>
           </div>
           {/* ERROR MESSAGE */}
@@ -393,7 +421,9 @@ export default function Records() {
                           className={`bg-white rounded-xl shadow-md p-4 border-l-4 hover:shadow-lg transition ${
                             entry.milk_type === "cow"
                               ? "border-green-500"
-                              : "border-blue-500"
+                              : entry.milk_type === "buffalo"
+                                ? "border-blue-500"
+                                : "border-orange-500"
                           }`}
                         >
                           {/* HEADER - BADGE + TOTAL */}
@@ -402,12 +432,16 @@ export default function Records() {
                               className={`text-xs px-3 py-0.5 rounded-full font-medium flex items-center gap-1 ${
                                 entry.milk_type === "cow"
                                   ? "bg-green-100 text-green-700"
-                                  : "bg-blue-100 text-blue-700"
+                                  : entry.milk_type === "buffalo"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-orange-100 text-orange-700"
                               }`}
                             >
                               {entry.milk_type === "cow"
                                 ? "🐄 Cow"
-                                : "🐃 Buffalo"}
+                                : entry.milk_type === "buffalo"
+                                  ? "🐃 Buffalo"
+                                  : `🥛 ${brandMilkName}`}
                             </span>
                             <p className="text-sm font-bold text-green-600">
                               ₹{Number(entry.total_amount).toFixed(2)}
@@ -541,7 +575,7 @@ export default function Records() {
               <button
                 disabled={currentPage === 1}
                 onClick={() => goToPage(currentPage - 1)}
-                className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-2 border-0 bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
               >
                 <i className="fa-solid fa-chevron-left"></i>
               </button>
@@ -567,7 +601,7 @@ export default function Records() {
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => goToPage(currentPage + 1)}
-                className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-2 border-0 bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
               >
                 <i className="fa-solid fa-chevron-right"></i>
               </button>

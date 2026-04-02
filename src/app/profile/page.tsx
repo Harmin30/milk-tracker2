@@ -10,6 +10,8 @@ export default function Profile() {
   const [mobile, setMobile] = useState("");
   const [cowPrice, setCowPrice] = useState("");
   const [buffaloPrice, setBuffaloPrice] = useState("");
+  const [brandMilkName, setBrandMilkName] = useState("");
+  const [brandMilkPrice, setBrandMilkPrice] = useState("");
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
@@ -51,6 +53,8 @@ export default function Profile() {
           setMobile(data.data.mobile || "");
           setCowPrice(data.data.default_cow_price || "");
           setBuffaloPrice(data.data.default_buffalo_price || "");
+          setBrandMilkName(data.data.brand_milk_name || "Packaged Milk");
+          setBrandMilkPrice(data.data.default_brand_price || "");
         }
       } catch (err) {
         console.log(err);
@@ -79,6 +83,9 @@ export default function Profile() {
           default_cow_price: cowPrice === "" ? null : Number(cowPrice),
           default_buffalo_price:
             buffaloPrice === "" ? null : Number(buffaloPrice),
+          brand_milk_name: brandMilkName || "Packaged Milk",
+          default_brand_price:
+            brandMilkPrice === "" ? null : Number(brandMilkPrice),
         }),
       });
 
@@ -250,6 +257,48 @@ export default function Profile() {
                     placeholder="Price/L"
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   />
+                </div>
+              </div>
+
+              {/* Packaged Milk Section */}
+              <div className="border-t-2 border-gray-200 pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <i className="fa-solid fa-glass-water text-orange-600 text-xs"></i>
+                  🥛 Packaged Milk
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Brand Name */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                      <i className="fa-solid fa-tag text-orange-500 text-xs"></i>
+                      Brand Name
+                    </label>
+                    <input
+                      type="text"
+                      value={brandMilkName}
+                      onChange={(e) => setBrandMilkName(e.target.value)}
+                      placeholder="e.g., Amul, Mother Dairy"
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                    />
+                  </div>
+
+                  {/* Brand Price */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                      <i className="fa-solid fa-indian-rupee text-orange-500 text-xs"></i>
+                      💰 Price/L
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={brandMilkPrice}
+                      onChange={(e) => setBrandMilkPrice(e.target.value)}
+                      placeholder="Price/L"
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -32,6 +32,8 @@ export async function GET(req: Request) {
         address,
         default_cow_price,
         default_buffalo_price,
+        brand_milk_name,
+        default_brand_price,
         created_at,
         is_active
       FROM users

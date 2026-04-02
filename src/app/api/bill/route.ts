@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     // Fetch profile
     const profileRes = await pool.query(
-      `SELECT name, address, mobile, default_cow_price, default_buffalo_price 
+      `SELECT name, address, mobile, default_cow_price, default_buffalo_price, brand_milk_name, default_brand_price 
        FROM users WHERE id = $1`,
       [user.userId],
     );
@@ -106,8 +106,10 @@ export async function POST(req: NextRequest) {
     // Totals
     let cowLiters = 0;
     let buffaloLiters = 0;
+    let packagedLiters = 0;
     let cowAmount = 0;
     let buffaloAmount = 0;
+    let packagedAmount = 0;
 
     entries.forEach((e) => {
       const liters = Number(e.liters);
@@ -117,13 +119,16 @@ export async function POST(req: NextRequest) {
       if (e.milk_type === "cow") {
         cowLiters += liters;
         cowAmount += amount;
-      } else {
+      } else if (e.milk_type === "buffalo") {
         buffaloLiters += liters;
         buffaloAmount += amount;
+      } else if (e.milk_type === "packaged") {
+        packagedLiters += liters;
+        packagedAmount += amount;
       }
     });
-    const totalLiters = cowLiters + buffaloLiters;
-    const totalAmount = cowAmount + buffaloAmount;
+    const totalLiters = cowLiters + buffaloLiters + packagedLiters;
+    const totalAmount = cowAmount + buffaloAmount + packagedAmount;
 
     // Save bill record
     if (type === "monthly") {
@@ -317,7 +322,7 @@ export async function POST(req: NextRequest) {
       page.drawRectangle({
         x,
         y: y - 60,
-        width: 150,
+        width: 110,
         height: 55,
         color: lightGray,
         borderColor: borderGray,
@@ -325,31 +330,37 @@ export async function POST(req: NextRequest) {
       });
 
       page.drawText(label, {
-        x: x + 10,
+        x: x + 8,
         y: y - 20,
-        size: 12,
+        size: 11,
         font: boldFont,
         color: blue,
       });
 
       page.drawText(`Liters: ${liters.toFixed(2)}`, {
-        x: x + 10,
+        x: x + 8,
         y: y - 35,
-        size: 10,
+        size: 9,
         font,
       });
 
       page.drawText(`Amount: Rs. ${amount.toFixed(2)}`, {
-        x: x + 10,
+        x: x + 8,
         y: y - 48,
-        size: 10,
+        size: 9,
         font,
       });
     };
 
     drawBox("Buffalo", buffaloLiters, buffaloAmount, 60);
-    drawBox("Cow", cowLiters, cowAmount, 230);
-    drawBox("Total", totalLiters, totalAmount, 400);
+    drawBox("Cow", cowLiters, cowAmount, 175);
+    drawBox(
+      profile.brand_milk_name || "Packaged Milk",
+      packagedLiters,
+      packagedAmount,
+      290,
+    );
+    drawBox("Total", totalLiters, totalAmount, 405);
 
     y -= 90;
 
@@ -431,8 +442,13 @@ export async function POST(req: NextRequest) {
     const rowHeight = 18;
 
     entries.forEach((e) => {
-      const formattedType =
+      let formattedType =
         e.milk_type.charAt(0).toUpperCase() + e.milk_type.slice(1);
+
+      // Use custom brand name for packaged milk
+      if (e.milk_type === "packaged") {
+        formattedType = profile.brand_milk_name || "Packaged Milk";
+      }
 
       const liters = Number(e.liters).toFixed(2);
       const rate = Number(e.price_per_liter).toFixed(2);

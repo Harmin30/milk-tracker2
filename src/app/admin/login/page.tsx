@@ -47,49 +47,43 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-block bg-gradient-to-r from-orange-500 to-red-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
-            <span className="text-white font-semibold text-xs sm:text-sm">
-              ADMIN PANEL
-            </span>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full mb-4 shadow-lg">
+            <span className="text-3xl">🥛</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            Admin Access
-          </h1>
-          <p className="text-gray-400 text-xs sm:text-sm">
-            Manage the Milk Tracker app
-          </p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-700 to-blue-600 bg-clip-text text-transparent mb-2">Admin Panel</h1>
+          <p className="text-indigo-600 text-sm font-medium">Milk Tracker Management</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+        <div className="bg-white rounded-2xl shadow-xl border border-indigo-200 p-8 backdrop-blur-sm">
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg mb-6 text-xs sm:text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleAdminLogin} className="space-y-4 sm:space-y-5">
+          <form onSubmit={handleAdminLogin} className="space-y-5">
             {/* Email Field */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
-                Admin Email
+              <label className="block text-sm font-semibold text-indigo-900 mb-2">
+                Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-700 border border-slate-600 rounded-lg text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 bg-indigo-50 border border-indigo-300 rounded-lg text-sm text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="admin@example.com"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-indigo-900 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -97,15 +91,15 @@ export default function AdminLogin() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-700 border border-slate-600 rounded-lg text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-indigo-50 border border-indigo-300 rounded-lg text-sm text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="Enter password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 text-lg"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-indigo-500 hover:text-indigo-700 text-sm font-medium"
                 >
-                  {showPassword ? "🙈" : "👁️"}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
@@ -114,29 +108,27 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-lg transition duration-200 mt-6 text-sm sm:text-base"
+              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 disabled:from-indigo-400 disabled:to-blue-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 mt-6 text-sm shadow-lg"
             >
-              {loading ? "Signing in..." : "Sign In as Admin"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           {/* Back to User Login */}
-          <div className="mt-6 text-center border-t border-slate-700 pt-6">
-            <p className="text-gray-400 text-xs sm:text-sm mb-3">
-              Regular user?
-            </p>
+          <div className="mt-6 text-center border-t border-indigo-200 pt-6">
+            <p className="text-indigo-600 text-sm mb-3 font-medium">Regular user?</p>
             <Link
               href="/login"
-              className="text-orange-400 hover:text-orange-300 font-medium transition text-sm sm:text-base"
+              className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm rounded-lg transition border border-blue-200"
             >
-              Go to User Login →
+              Go to User Login
             </Link>
           </div>
         </div>
 
-        {/* Footer Info */}
-        <p className="text-center text-gray-500 text-xs mt-6">
-          Only admin credentials allowed
+        {/* Footer */}
+        <p className="text-center text-indigo-500 text-xs mt-6 font-medium">
+          🔒 Secure admin access only
         </p>
       </div>
     </div>

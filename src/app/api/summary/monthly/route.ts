@@ -70,10 +70,13 @@ export async function GET(req: Request) {
 
     let cow_liters = 0;
     let buffalo_liters = 0;
+    let packaged_liters = 0;
     let cow_amount = 0;
     let buffalo_amount = 0;
+    let packaged_amount = 0;
     const cowRates = new Set<number>();
     const buffaloRates = new Set<number>();
+    const packagedRates = new Set<number>();
 
     result.rows.forEach((row) => {
       if (row.milk_type === "cow") {
@@ -82,6 +85,9 @@ export async function GET(req: Request) {
       } else if (row.milk_type === "buffalo") {
         buffalo_liters = Number(row.total_liters);
         buffalo_amount = parseFloat(row.total_amount);
+      } else if (row.milk_type === "packaged") {
+        packaged_liters = Number(row.total_liters);
+        packaged_amount = parseFloat(row.total_amount);
       }
     });
     rateResult.rows.forEach((row) => {
@@ -89,17 +95,21 @@ export async function GET(req: Request) {
         cowRates.add(Number(row.price_per_liter));
       } else if (row.milk_type === "buffalo") {
         buffaloRates.add(Number(row.price_per_liter));
+      } else if (row.milk_type === "packaged") {
+        packagedRates.add(Number(row.price_per_liter));
       }
     });
 
-    const total_liters = cow_liters + buffalo_liters;
-    const total_amount = cow_amount + buffalo_amount;
+    const total_liters = cow_liters + buffalo_liters + packaged_liters;
+    const total_amount = cow_amount + buffalo_amount + packaged_amount;
 
     let cow_rate = 0;
     let buffalo_rate = 0;
+    let packaged_rate = 0;
 
     let cow_rate_changed = false;
     let buffalo_rate_changed = false;
+    let packaged_rate_changed = false;
 
     // Cow rate logic
     if (cowRates.size === 1) {
@@ -116,15 +126,27 @@ export async function GET(req: Request) {
       buffalo_rate = buffalo_amount / buffalo_liters;
       buffalo_rate_changed = true;
     }
+
+    // Packaged rate logic
+    if (packagedRates.size === 1) {
+      packaged_rate = [...packagedRates][0];
+    } else if (packagedRates.size > 1 && packaged_liters > 0) {
+      packaged_rate = packaged_amount / packaged_liters;
+      packaged_rate_changed = true;
+    }
     return NextResponse.json({
       cow_liters,
       buffalo_liters,
+      packaged_liters,
       cow_rate,
       buffalo_rate,
+      packaged_rate,
       cow_rate_changed,
       buffalo_rate_changed,
+      packaged_rate_changed,
       cow_amount,
       buffalo_amount,
+      packaged_amount,
       total_liters,
       total_amount,
     });
