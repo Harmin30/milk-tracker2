@@ -23,6 +23,8 @@ function EntriesPage() {
   const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
   const [brandMilkPrice, setBrandMilkPrice] = useState(0);
 
+  const [literPresets, setLiterPresets] = useState<number[]>([2, 4, 6, 8]);
+
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
     "success" | "error" | "warning"
@@ -32,6 +34,74 @@ function EntriesPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [hasAnyEntries, setHasAnyEntries] = useState(true); // Default to true to hide banner until we check
+
+  // Calculate smart personalized liter recommendations based on frequency + recency
+  function calculateLiterSuggestions(
+    entries: Array<{ id: string | number; liters: number | string }>,
+    currentEditId?: string | null,
+  ): number[] {
+    const DEFAULT_PRESETS = [2, 4, 6, 8];
+    if (!entries || !Array.isArray(entries) || entries.length === 0) {
+      return DEFAULT_PRESETS;
+    }
+
+    // Filter out invalid entries and current entry being edited
+    const filtered = entries.filter((e) => {
+      if (!e || e.liters === undefined || e.liters === null) return false;
+      if (currentEditId && String(e.id) === String(currentEditId)) return false;
+      const num = Number(e.liters);
+      return !isNaN(num) && num > 0;
+    });
+
+    if (filtered.length === 0) {
+      return DEFAULT_PRESETS;
+    }
+
+    // Score each distinct liter value: Weight = (0.92)^index for exponential recency decay
+    const scoreMap: Record<number, number> = {};
+    const recencyMap: Record<number, number> = {};
+    const frequencyMap: Record<number, number> = {};
+
+    filtered.forEach((entry, idx) => {
+      const l = Number(entry.liters);
+      const weight = Math.pow(0.92, idx);
+      scoreMap[l] = (scoreMap[l] || 0) + weight;
+      frequencyMap[l] = (frequencyMap[l] || 0) + 1;
+      if (recencyMap[l] === undefined) {
+        recencyMap[l] = idx;
+      }
+    });
+
+    const uniqueLiters = Object.keys(scoreMap).map(Number);
+
+    // Sort descending by score, tie-break by recency, then frequency
+    uniqueLiters.sort((a, b) => {
+      const scoreDiff = scoreMap[b] - scoreMap[a];
+      if (Math.abs(scoreDiff) > 0.001) {
+        return scoreDiff;
+      }
+      const recencyDiff = recencyMap[a] - recencyMap[b];
+      if (recencyDiff !== 0) {
+        return recencyDiff;
+      }
+      return frequencyMap[b] - frequencyMap[a];
+    });
+
+    // Take top distinct suggestions up to 4
+    const suggestions = uniqueLiters.slice(0, 4);
+
+    // Fill remaining slots with fallbacks if fewer than 4 distinct historical values
+    if (suggestions.length < 4) {
+      for (const def of DEFAULT_PRESETS) {
+        if (!suggestions.includes(def)) {
+          suggestions.push(def);
+          if (suggestions.length === 4) break;
+        }
+      }
+    }
+
+    return suggestions;
+  }
 
   // Cleanup redirect timer on unmount
   useEffect(() => {
@@ -52,7 +122,7 @@ function EntriesPage() {
     }
   }, [message, messageType]);
 
-  // Load profile prices and check if user has any entries
+  // Load profile prices and check user milk history for suggestions
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -74,10 +144,15 @@ function EntriesPage() {
           }
         }
 
-        // Check if user has any entries
-        const entriesRes = await fetch("/api/milk?limit=1");
+        // Fetch recent milk entries to calculate personalized liter suggestions
+        const entriesRes = await fetch("/api/milk?limit=50");
         const entriesData = await entriesRes.json();
+        const historyData = entriesData.data || [];
         setHasAnyEntries((entriesData.total || 0) > 0);
+
+        // Update smart liter presets
+        const suggestions = calculateLiterSuggestions(historyData, editId);
+        setLiterPresets(suggestions);
       } catch (err) {
         console.log(err);
         setHasAnyEntries(true); // Default to true on error to hide banner
@@ -85,7 +160,7 @@ function EntriesPage() {
     }
 
     loadProfile();
-  }, []);
+  }, [editId]);
 
   // Load entry for editing
   useEffect(() => {
@@ -236,6 +311,13 @@ function EntriesPage() {
     setLoading(false);
   }
 
+  // Reset scroll when success state triggers
+  useEffect(() => {
+    if (showSuccess) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [showSuccess]);
+
   return (
     <>
       {message && (
@@ -262,82 +344,84 @@ function EntriesPage() {
       )}
 
       <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
-        <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-3 sm:p-6">
+        <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto px-4 py-4 sm:px-6 sm:py-6">
           <AnimatePresence mode="wait">
             {showSuccess ? (
               <motion.div
                 key="full-page-success"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="min-h-[70vh] sm:min-h-[75vh] flex flex-col items-center justify-center text-center px-4 py-8 space-y-6 max-w-xl mx-auto"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="fixed inset-0 z-30 pt-16 pb-[72px] bg-slate-50/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto"
               >
-                {/* SUCCESS CHECKMARK WITH EXPANDING RIPPLE RING */}
-                <div className="relative flex items-center justify-center">
-                  {/* Single subtle expanding ripple ring */}
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0.6 }}
-                    animate={{ scale: 1.35, opacity: 0 }}
-                    transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-                    className="absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-emerald-400/60 bg-emerald-100/30"
-                  />
+                <div className="flex flex-col items-center justify-center text-center space-y-5 max-w-sm sm:max-w-md mx-auto my-auto">
+                  {/* SUCCESS CHECKMARK WITH EXPANDING RIPPLE RING */}
+                  <div className="relative flex items-center justify-center">
+                    {/* Single subtle expanding ripple ring */}
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0.6 }}
+                      animate={{ scale: 1.35, opacity: 0 }}
+                      transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+                      className="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-emerald-400/60 bg-emerald-100/30"
+                    />
 
-                  {/* Large Success Circle (96px mobile / 112px desktop) */}
-                  <motion.div
-                    initial={{ scale: 0.65, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 22,
-                      delay: 0.05,
-                    }}
-                    className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-emerald-50 border-2 border-emerald-200/90 text-emerald-600 flex items-center justify-center shadow-xs"
-                  >
-                    <motion.i
-                      initial={{ scale: 0.4, opacity: 0 }}
+                    {/* Success Circle */}
+                    <motion.div
+                      initial={{ scale: 0.65, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.18, delay: 0.16 }}
-                      className="fa-solid fa-check text-4xl sm:text-5xl"
-                    ></motion.i>
-                  </motion.div>
-                </div>
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 22,
+                        delay: 0.05,
+                      }}
+                      className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-50 border-2 border-emerald-200/90 text-emerald-600 flex items-center justify-center shadow-xs"
+                    >
+                      <motion.i
+                        initial={{ scale: 0.4, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.18, delay: 0.16 }}
+                        className="fa-solid fa-check text-3xl sm:text-4xl"
+                      ></motion.i>
+                    </motion.div>
+                  </div>
 
-                {/* PRIMARY HEADING & SECONDARY TEXT */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22, delay: 0.25 }}
-                  className="space-y-2 max-w-md mx-auto"
-                >
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                    {editMode ? "Entry updated" : "Milk entry saved"}
-                  </h2>
-                  <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                    {editMode
-                      ? "Your milk record has been updated successfully."
-                      : "Your record has been added successfully."}
-                  </p>
-                </motion.div>
-
-                {/* CONTEXTUAL DETAIL CHIP */}
-                {liters && Number(liters) > 0 && (
+                  {/* PRIMARY HEADING & SECONDARY TEXT */}
                   <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.22, delay: 0.38 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-200/80 shadow-2xs text-xs font-bold text-slate-700 mt-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22, delay: 0.25 }}
+                    className="space-y-1.5 max-w-md mx-auto"
                   >
-                    <span className="capitalize text-indigo-600 font-extrabold">
-                      {milkType === "packaged" ? brandMilkName : milkType}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-slate-900">{liters} L</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-emerald-600">₹{total.toFixed(2)}</span>
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                      {editMode ? "Entry updated" : "Milk entry saved"}
+                    </h2>
+                    <p className="text-xs sm:text-sm font-medium text-slate-500 leading-relaxed">
+                      {editMode
+                        ? "Your milk record has been updated successfully."
+                        : "Your record has been added successfully."}
+                    </p>
                   </motion.div>
-                )}
+
+                  {/* CONTEXTUAL DETAIL CHIP */}
+                  {liters && Number(liters) > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.22, delay: 0.38 }}
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-slate-200/80 shadow-xs text-xs font-bold text-slate-700 mt-1"
+                    >
+                      <span className="capitalize text-indigo-600 font-extrabold">
+                        {milkType === "packaged" ? brandMilkName : milkType}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-900">{liters} L</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-emerald-600">₹{total.toFixed(2)}</span>
+                    </motion.div>
+                  )}
+                </div>
               </motion.div>
             ) : (
               <motion.div
@@ -345,13 +429,13 @@ function EntriesPage() {
                 initial={{ opacity: 1 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.15 }}
-                className="space-y-3 sm:space-y-5"
+                className="space-y-3.5 sm:space-y-5"
               >
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
                     {editMode ? "Update Milk Entry" : "Add Milk Entry"}
                   </h1>
-                  <p className="text-[11px] sm:text-xs font-medium text-slate-500 mt-0.5">
+                  <p className="text-xs font-medium text-slate-500 mt-0.5 sm:text-[13px]">
                     {editMode
                       ? "Modify existing record details"
                       : "Log a new daily milk record"}
@@ -363,20 +447,20 @@ function EntriesPage() {
                   !cowPrice &&
                   !buffaloPrice &&
                   !brandMilkPrice && (
-                    <div className="bg-indigo-50/80 border border-indigo-200/80 text-indigo-900 text-xs p-3 rounded-xl flex gap-2.5 items-center shadow-xs">
-                      <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0 text-xs">
+                    <div className="bg-indigo-50/80 border border-indigo-200/80 text-indigo-900 text-xs p-3 rounded-2xl flex gap-2.5 items-center shadow-xs">
+                      <div className="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0 text-xs">
                         💡
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs mb-0.5">Quick Setup</p>
-                        <p className="text-[11px] text-indigo-700">
+                        <p className="font-bold text-xs mb-0.5">Quick Setup</p>
+                        <p className="text-[11px] sm:text-xs text-indigo-700">
                           Set default milk prices in your Profile to auto-fill entries
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => router.push("/profile")}
-                        className="px-2.5 py-1 bg-indigo-600 text-white text-xs rounded-lg font-semibold hover:bg-indigo-700 transition flex-shrink-0 shadow-xs"
+                        className="px-2.5 py-1 bg-indigo-600 text-white text-xs rounded-xl font-bold hover:bg-indigo-700 transition flex-shrink-0 shadow-xs cursor-pointer"
                       >
                         Set Now →
                       </button>
@@ -384,8 +468,8 @@ function EntriesPage() {
                   )}
 
                 {editMode && (
-                  <div className="bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs p-2.5 px-3 rounded-xl shadow-xs">
-                    <p className="font-semibold text-xs">You are editing an existing milk entry</p>
+                  <div className="bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs p-2.5 px-3.5 rounded-2xl shadow-xs">
+                    <p className="font-bold text-xs">You are editing an existing milk entry</p>
                     <p className="text-[11px] text-amber-700 mt-0.5">
                       Editing entry • {liters} L {milkType}
                     </p>
@@ -393,52 +477,52 @@ function EntriesPage() {
                 )}
 
                 <div
-                  className={`rounded-2xl border shadow-xs p-3.5 sm:p-6 ${
+                  className={`rounded-2xl border shadow-xs p-3.5 sm:p-5 ${
                     editMode
                       ? "bg-amber-50/30 border-amber-200/80"
                       : "bg-white border-slate-200/80"
                   }`}
                 >
-                  <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5">
                     {/* Date */}
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1">
+                      <label className="text-xs sm:text-[13px] font-bold text-slate-700 flex items-center gap-1.5 mb-1.5">
                         <i className="fa-solid fa-calendar text-indigo-600 text-xs"></i>
                         <span>Date</span>
                       </label>
 
                       <div className="relative">
-                        <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <i className="fa-solid fa-calendar absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none z-10"></i>
 
                         <input
                           type="date"
                           value={date}
                           max={today}
                           onChange={(e) => setDate(e.target.value)}
-                          className="w-full border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs h-10 min-h-[40px] bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
+                          className="w-full border border-slate-200 rounded-xl pl-11 pr-3 py-2 text-xs sm:text-sm font-medium h-[42px] min-h-[42px] sm:h-11 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                         />
                       </div>
                     </div>
 
                     {/* Milk Type */}
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 mb-1 block">
+                      <label className="text-xs sm:text-[13px] font-bold text-slate-700 mb-1.5 block">
                         Milk Type
                       </label>
 
-                      <div className="grid grid-cols-3 gap-1.5 mt-1">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                         {/* Buffalo First */}
                         <button
                           type="button"
                           onClick={() => setMilkType("buffalo")}
-                          className={`flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border text-xs font-semibold transition whitespace-nowrap h-10 min-h-[40px]
+                          className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold transition whitespace-nowrap h-9 min-h-[36px] sm:h-[38px] shadow-2xs cursor-pointer
               ${
                 milkType === "buffalo"
                   ? "bg-gradient-to-r from-blue-100/90 via-blue-50 to-indigo-100/90 text-blue-950 border-blue-500 ring-2 ring-blue-500/20 shadow-xs font-bold"
                   : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-blue-50/50 hover:border-blue-200"
               }`}
                         >
-                          <span>🐃</span>
+                          <span className="text-xs sm:text-sm">🐃</span>
                           <span>Buffalo</span>
                         </button>
 
@@ -446,14 +530,14 @@ function EntriesPage() {
                         <button
                           type="button"
                           onClick={() => setMilkType("cow")}
-                          className={`flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border text-xs font-semibold transition whitespace-nowrap h-10 min-h-[40px]
+                          className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold transition whitespace-nowrap h-9 min-h-[36px] sm:h-[38px] shadow-2xs cursor-pointer
               ${
                 milkType === "cow"
                   ? "bg-gradient-to-r from-emerald-100/90 via-emerald-50 to-teal-100/90 text-emerald-950 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs font-bold"
                   : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50/50 hover:border-emerald-200"
               }`}
                         >
-                          <span>🐄</span>
+                          <span className="text-xs sm:text-sm">🐄</span>
                           <span>Cow</span>
                         </button>
 
@@ -461,14 +545,14 @@ function EntriesPage() {
                         <button
                           type="button"
                           onClick={() => setMilkType("packaged")}
-                          className={`flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border text-xs font-semibold transition whitespace-nowrap h-10 min-h-[40px] truncate
+                          className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold transition whitespace-nowrap h-9 min-h-[36px] sm:h-[38px] shadow-2xs cursor-pointer overflow-hidden
               ${
                 milkType === "packaged"
                   ? "bg-gradient-to-r from-amber-100/90 via-amber-50 to-orange-100/90 text-amber-950 border-amber-500 ring-2 ring-amber-500/20 shadow-xs font-bold"
                   : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-amber-50/50 hover:border-amber-200"
               }`}
                         >
-                          <span>🥛</span>
+                          <span className="text-xs sm:text-sm flex-shrink-0">🥛</span>
                           <span className="truncate">{brandMilkName}</span>
                         </button>
                       </div>
@@ -476,13 +560,13 @@ function EntriesPage() {
 
                     {/* Liters */}
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                      <label className="text-xs sm:text-[13px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <i className="fa-solid fa-droplet text-indigo-600 text-xs"></i>
                           Liters
                         </span>
                         {liters && Number(liters) > 0 && (
-                          <span className="text-emerald-600 text-[11px] font-bold">✓ Valid</span>
+                          <span className="text-emerald-600 text-xs font-bold">✓ Valid</span>
                         )}
                       </label>
 
@@ -525,34 +609,51 @@ function EntriesPage() {
                             setMessage("");
                             setLiters(val);
                           }}
-                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs h-10 min-h-[40px] bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
+                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium h-[42px] min-h-[42px] sm:h-11 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                           required
                         />
                       </div>
 
-                      <div className="flex gap-1.5">
-                        {[2, 4, 6, 8].map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => setLiters(String(preset))}
-                            className="border border-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-semibold text-[11px] h-8 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition"
-                          >
-                            {preset}L
-                          </button>
-                        ))}
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-semibold text-slate-400">Suggested</p>
+
+                        <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                          {literPresets.map((preset, idx) => {
+                            const isSelected =
+                              liters !== "" && Number(liters) === Number(preset);
+                            const isTopRecommendation =
+                              idx === 0 && hasAnyEntries && !isSelected;
+
+                            return (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setLiters(String(preset))}
+                                className={`px-2 py-0.5 rounded-lg text-[11px] h-7 min-h-[28px] sm:h-7.5 transition active:scale-95 flex items-center justify-center cursor-pointer ${
+                                  isSelected
+                                    ? "bg-indigo-600 text-white font-bold border border-indigo-600 shadow-xs ring-2 ring-indigo-500/20"
+                                    : isTopRecommendation
+                                      ? "bg-slate-100/90 border border-slate-300/80 text-slate-800 font-semibold"
+                                      : "bg-white border border-slate-200/60 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/40 hover:border-indigo-200/80 font-semibold"
+                                }`}
+                              >
+                                {preset}L
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
                     {/* Price */}
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                      <label className="text-xs sm:text-[13px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <i className="fa-solid fa-indian-rupee text-indigo-600 text-xs"></i>
                           Price per Liter
                         </span>
                         {price && Number(price) > 0 && (
-                          <span className="text-emerald-600 text-[11px] font-bold">✓ Valid</span>
+                          <span className="text-emerald-600 text-xs font-bold">✓ Valid</span>
                         )}
                       </label>
 
@@ -594,17 +695,17 @@ function EntriesPage() {
                           setMessage("");
                           setPrice(val);
                         }}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs h-10 min-h-[40px] bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition mb-1.5"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium h-[42px] min-h-[42px] sm:h-11 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition mb-1.5"
                       />
 
-                      <div className="bg-slate-50 border border-slate-200/70 text-slate-600 text-[11px] p-2 px-3 rounded-xl flex gap-2 items-center">
+                      <div className="bg-slate-50/90 border border-slate-200/80 text-slate-600 text-[11px] sm:text-xs p-2 px-3 rounded-xl flex gap-2 items-center">
                         <i className="fa-solid fa-circle-info flex-shrink-0 text-xs text-indigo-600"></i>
                         <p className="flex-1">
                           Prices auto-filled from profile.
                           <button
                             type="button"
                             onClick={() => router.push("/profile")}
-                            className="ml-1 underline font-semibold text-indigo-600"
+                            className="ml-1 underline font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
                           >
                             Edit
                           </button>
@@ -613,13 +714,15 @@ function EntriesPage() {
                     </div>
 
                     {/* Total with Breakdown */}
-                    <div className="bg-slate-50 border border-slate-200/80 p-2.5 px-3 rounded-xl">
-                      <p className="text-[10px] text-slate-500 font-medium mb-0.5">
+                    <div className="bg-slate-50/90 border border-slate-200/80 p-2.5 px-3.5 rounded-xl flex flex-col justify-center space-y-0.5">
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                         Total Breakdown
                       </p>
-                      <p className="text-xs text-slate-700 font-semibold">
-                        {liters || "0"}L × ₹{price || "0"} ={" "}
-                        <span className="text-sm font-bold text-emerald-600">
+                      <p className="text-xs sm:text-sm text-slate-700 font-semibold flex items-center justify-between">
+                        <span>
+                          {liters || "0"}L × ₹{price || "0"}
+                        </span>
+                        <span className="text-sm sm:text-base font-extrabold text-emerald-600">
                           ₹{total.toFixed(2)}
                         </span>
                       </p>
@@ -628,10 +731,10 @@ function EntriesPage() {
                     <button
                       type="submit"
                       disabled={loading || showSuccess}
-                      className={`w-full text-white py-2.5 rounded-xl font-semibold text-xs h-10 min-h-[40px] sm:h-11 sm:min-h-[44px] shadow-xs transition ${
+                      className={`w-full text-white py-2.5 rounded-xl font-bold text-xs sm:text-sm h-11 min-h-[44px] sm:h-12 shadow-xs hover:shadow-sm transition active:scale-[0.99] cursor-pointer mt-0.5 ${
                         editMode
-                          ? "bg-amber-600 hover:bg-amber-700"
-                          : "bg-indigo-600 hover:bg-indigo-700"
+                          ? "bg-amber-600 hover:bg-amber-700 active:bg-amber-800"
+                          : "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800"
                       }`}
                     >
                       {loading
