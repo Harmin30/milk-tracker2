@@ -47,57 +47,66 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 py-8 text-slate-100">
+      <div className="w-full max-w-md space-y-4">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full mb-4 shadow-lg">
-            <span className="text-3xl">🥛</span>
+        <div className="text-center space-y-1.5">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md">
+              <i className="fa-solid fa-user-shield text-lg"></i>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-700 to-blue-600 bg-clip-text text-transparent mb-2">Admin Panel</h1>
-          <p className="text-indigo-600 text-sm font-medium">Milk Tracker Management</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Admin Portal</h1>
+          <p className="text-xs text-slate-400 font-medium">
+            Milk Tracker Management & System Administration
+          </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-indigo-200 p-8 backdrop-blur-sm">
+        <div className="bg-slate-800/90 rounded-3xl border border-slate-700/80 shadow-xl p-6 sm:p-8 space-y-4 backdrop-blur-md">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm font-medium">
-              {error}
+            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <i className="fa-solid fa-circle-exclamation text-rose-400"></i>
+              <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleAdminLogin} className="space-y-5">
+          <form onSubmit={handleAdminLogin} className="space-y-3.5">
             {/* Email Field */}
-            <div>
-              <label className="block text-sm font-semibold text-indigo-900 mb-2">
-                Email Address
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
+                Admin Email Address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-indigo-50 border border-indigo-300 rounded-lg text-sm text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="admin@example.com"
-              />
+              <div className="relative">
+                <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition"
+                  placeholder="admin@example.com"
+                />
+              </div>
             </div>
 
             {/* Password Field */}
-            <div>
-              <label className="block text-sm font-semibold text-indigo-900 mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
                 Password
               </label>
               <div className="relative">
+                <i className="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-indigo-50 border border-indigo-300 rounded-lg text-sm text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="Enter password"
+                  className="w-full pl-9 pr-10 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition"
+                  placeholder="Enter admin password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-indigo-500 hover:text-indigo-700 text-sm font-medium"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs font-semibold"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -108,27 +117,34 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 disabled:from-indigo-400 disabled:to-blue-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 mt-6 text-sm shadow-lg"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-xl transition duration-200 mt-4 text-xs shadow-md flex items-center justify-center gap-2"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (
+                <span>Signing in...</span>
+              ) : (
+                <>
+                  <i className="fa-solid fa-right-to-bracket text-xs"></i>
+                  <span>Sign In to Admin</span>
+                </>
+              )}
             </button>
           </form>
 
           {/* Back to User Login */}
-          <div className="mt-6 text-center border-t border-indigo-200 pt-6">
-            <p className="text-indigo-600 text-sm mb-3 font-medium">Regular user?</p>
+          <div className="pt-2 border-t border-slate-700/60 text-center">
             <Link
               href="/login"
-              className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm rounded-lg transition border border-blue-200"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-300 transition font-semibold"
             >
-              Go to User Login
+              <i className="fa-solid fa-arrow-left text-[10px]"></i>
+              <span>Return to User Login</span>
             </Link>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-indigo-500 text-xs mt-6 font-medium">
-          🔒 Secure admin access only
+        <p className="text-center text-slate-500 text-[11px] font-medium">
+          🔒 Secure restricted access area
         </p>
       </div>
     </div>

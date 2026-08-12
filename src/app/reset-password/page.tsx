@@ -70,46 +70,46 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-100 via-amber-50 to-gray-50 px-4 py-8">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50/80 px-4 py-8 text-slate-900">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-lg p-6 sm:p-8 space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-3 rounded-xl">
-              <i className="fa-solid fa-key text-xl"></i>
+        <div className="text-center space-y-1.5">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xs">
+              <i className="fa-solid fa-key text-lg"></i>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Reset Password</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Reset Password</h1>
+          <p className="text-xs text-slate-500 font-medium">
             Enter your email and create a new password
           </p>
         </div>
 
         {/* Success Alert */}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm p-3 rounded-lg flex items-center gap-2">
-            <i className="fa-solid fa-circle-check"></i>
-            {message}
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl flex items-center gap-2 font-medium">
+            <i className="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+            <span>{message}</span>
           </div>
         )}
 
         {/* Error Alert */}
         {message && !success && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg flex items-center gap-2">
-            <i className="fa-solid fa-circle-exclamation"></i>
-            {message}
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl flex items-center gap-2 font-medium">
+            <i className="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
+            <span>{message}</span>
           </div>
         )}
 
         {!success && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">
                 Email Address
               </label>
               <div className="relative">
-                <i className="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type="email"
                   name="email"
@@ -119,29 +119,29 @@ export default function ResetPassword() {
                     setEmail(e.target.value);
                     if (fieldErrors.email) setFieldErrors({});
                   }}
-                  className={`w-full border-2 rounded-lg pl-11 pr-4 py-3 text-sm focus:outline-none transition ${
+                  className={`w-full border rounded-xl pl-9 pr-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                     fieldErrors.email
-                      ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                      : "border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                      : "border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   }`}
                   disabled={loading}
                 />
               </div>
               {fieldErrors.email && (
-                <p className="text-red-500 text-xs flex items-center gap-1">
-                  <i className="fa-solid fa-exclamation-circle text-xs"></i>
+                <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                  <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                   {fieldErrors.email}
                 </p>
               )}
             </div>
 
             {/* Password */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">
                 New Password
               </label>
               <div className="relative">
-                <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i className="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -151,23 +151,23 @@ export default function ResetPassword() {
                     setPassword(e.target.value);
                     if (fieldErrors.password) setFieldErrors({});
                   }}
-                  className={`w-full border-2 rounded-lg pl-11 pr-11 py-3 text-sm focus:outline-none transition ${
+                  className={`w-full border rounded-xl pl-9 pr-10 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                     fieldErrors.password
-                      ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                      : "border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                      : "border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   }`}
                   disabled={loading}
                 />
                 <i
                   className={`fa-solid ${
                     showPassword ? "fa-eye-slash" : "fa-eye"
-                  } absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition`}
+                  } absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-slate-600 text-xs transition`}
                   onClick={() => !loading && setShowPassword(!showPassword)}
                 ></i>
               </div>
               {fieldErrors.password && (
-                <p className="text-red-500 text-xs flex items-center gap-1">
-                  <i className="fa-solid fa-exclamation-circle text-xs"></i>
+                <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                  <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                   {fieldErrors.password}
                 </p>
               )}
@@ -177,16 +177,16 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2 mt-6 ${
+              className={`w-full py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center space-x-2 shadow-xs mt-4 ${
                 loading
-                  ? "bg-amber-400 cursor-not-allowed opacity-75"
-                  : "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-              } text-white`}
+                  ? "bg-indigo-400 cursor-not-allowed opacity-75 text-white"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              }`}
             >
               {loading ? (
                 <>
                   <svg
-                    className="w-5 h-5 animate-spin"
+                    className="w-4 h-4 animate-spin text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -209,7 +209,7 @@ export default function ResetPassword() {
                 </>
               ) : (
                 <>
-                  <i className="fa-solid fa-check-circle"></i>
+                  <i className="fa-solid fa-check-circle text-xs"></i>
                   <span>Reset Password</span>
                 </>
               )}
@@ -219,11 +219,11 @@ export default function ResetPassword() {
 
         {/* Back to Login */}
         {!success && (
-          <div className="mt-4">
-            <Link href="/login">
-              <button className="w-full border-2 border-gray-300 bg-white hover:bg-amber-50 hover:border-amber-500 py-3 rounded-lg text-amber-600 font-semibold transition shadow-md">
-                <i className="fa-solid fa-arrow-left mr-2"></i>
-                Back to Login
+          <div className="pt-1">
+            <Link href="/login" className="block">
+              <button className="w-full border border-slate-200 bg-slate-50/80 hover:bg-slate-100 py-2.5 rounded-xl text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                <i className="fa-solid fa-arrow-left text-xs"></i>
+                <span>Back to Login</span>
               </button>
             </Link>
           </div>
@@ -231,9 +231,9 @@ export default function ResetPassword() {
 
         {/* Success - Back to Login Button */}
         {success && (
-          <div className="mt-4">
-            <Link href="/login">
-              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-lg font-semibold transition">
+          <div className="pt-1">
+            <Link href="/login" className="block">
+              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold text-xs transition shadow-xs">
                 Go to Login
               </button>
             </Link>

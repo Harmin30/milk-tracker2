@@ -112,87 +112,87 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-24">
+    <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
       {/* TOAST NOTIFICATION */}
       {message && (
         <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 shadow-lg ${
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-3.5 px-5 rounded-2xl border flex items-center gap-3 text-xs font-semibold transition-all duration-300 shadow-lg ${
             messageType === "success"
-              ? "bg-green-50 border-green-300 text-green-700"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
               : messageType === "error"
-                ? "bg-red-50 border-red-300 text-red-700"
-                : "bg-yellow-50 border-yellow-300 text-yellow-700"
+                ? "bg-rose-50 border-rose-200 text-rose-700"
+                : "bg-amber-50 border-amber-200 text-amber-800"
           }`}
         >
           {messageType === "success" && (
-            <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+            <i className="fa-solid fa-circle-check text-emerald-500 text-sm flex-shrink-0"></i>
           )}
           {messageType === "error" && (
-            <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+            <i className="fa-solid fa-circle-xmark text-rose-500 text-sm flex-shrink-0"></i>
           )}
           {messageType === "warning" && (
-            <i className="fa-solid fa-triangle-exclamation text-lg flex-shrink-0"></i>
+            <i className="fa-solid fa-triangle-exclamation text-amber-500 text-sm flex-shrink-0"></i>
           )}
           <span>{message}</span>
         </div>
       )}
 
-      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
+      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
         {/* PAGE HEADER */}
-
         <div>
-          <h1 className="text-2xl font-semibold">Profile</h1>
-
-          <p className="text-sm text-gray-500">
-            Manage your personal details and milk pricing
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Profile</h1>
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            Manage your personal details and default milk pricing
           </p>
         </div>
 
-        {loading && <p className="text-gray-500 text-sm">Loading profile...</p>}
+        {loading && <p className="text-slate-500 text-xs font-medium text-center py-4">Loading profile...</p>}
 
         {!loading && (
           <>
             {/* PERSONAL INFO */}
-            <div className="bg-white p-5 rounded-xl shadow-sm space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <i className="fa-solid fa-user text-blue-600 text-lg"></i>
+            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                  <i className="fa-solid fa-user"></i>
+                </div>
                 <div>
-                  <h2 className="font-semibold text-gray-800">
+                  <h2 className="font-bold text-slate-900 text-sm tracking-tight">
                     Personal Information
                   </h2>
-                  <p className="text-xs text-gray-500">Your basic details</p>
+                  <p className="text-[11px] text-slate-500">Your basic user details</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                  <i className="fa-solid fa-id-card text-blue-500 text-xs"></i>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <i className="fa-solid fa-id-card text-indigo-600 text-xs"></i>
                   Full Name
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                  <i className="fa-solid fa-map-pin text-blue-500 text-xs"></i>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <i className="fa-solid fa-map-pin text-indigo-600 text-xs"></i>
                   Address
                 </label>
                 <input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Enter your address"
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                  <i className="fa-solid fa-phone text-blue-500 text-xs"></i>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <i className="fa-solid fa-phone text-indigo-600 text-xs"></i>
                   Mobile Number
                 </label>
                 <input
@@ -202,22 +202,24 @@ export default function Profile() {
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
                   placeholder="10 digit number"
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[11px] text-slate-500 mt-1">
                   Enter 10-digit mobile number without country code
                 </p>
               </div>
             </div>
 
             {/* MILK PRICES */}
-            <div className="bg-white p-5 rounded-xl shadow-sm space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <i className="fa-solid fa-tag text-green-600 text-lg"></i>
+            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                  <i className="fa-solid fa-tag"></i>
+                </div>
                 <div>
-                  <h2 className="font-semibold text-gray-800">Milk Pricing</h2>
-                  <p className="text-xs text-gray-500">
-                    Default prices for entries
+                  <h2 className="font-bold text-slate-900 text-sm tracking-tight">Milk Pricing</h2>
+                  <p className="text-[11px] text-slate-500">
+                    Default prices auto-filled on entry page
                   </p>
                 </div>
               </div>
@@ -225,9 +227,8 @@ export default function Profile() {
               <div className="grid grid-cols-2 gap-3">
                 {/* Buffalo First */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <i className="fa-solid fa-cow text-blue-500 text-xs"></i>
-                    🐃 Buffalo Price
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1 mb-1.5">
+                    <span>🐃 Buffalo Price</span>
                   </label>
 
                   <input
@@ -237,15 +238,14 @@ export default function Profile() {
                     value={buffaloPrice}
                     onChange={(e) => setBuffaloPrice(e.target.value)}
                     placeholder="Price/L"
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                   />
                 </div>
 
                 {/* Cow Second */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <i className="fa-solid fa-cow text-green-500 text-xs"></i>
-                    🐄 Cow Price
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1 mb-1.5">
+                    <span>🐄 Cow Price</span>
                   </label>
 
                   <input
@@ -255,23 +255,21 @@ export default function Profile() {
                     value={cowPrice}
                     onChange={(e) => setCowPrice(e.target.value)}
                     placeholder="Price/L"
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Packaged Milk Section */}
-              <div className="border-t-2 border-gray-200 pt-4 mt-4">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <i className="fa-solid fa-glass-water text-orange-600 text-xs"></i>
-                  🥛 Packaged Milk
+              <div className="border-t border-slate-100 pt-3 mt-3 space-y-2.5">
+                <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>🥛 Packaged Milk Defaults</span>
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
                   {/* Brand Name */}
                   <div>
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                      <i className="fa-solid fa-tag text-orange-500 text-xs"></i>
+                    <label className="text-[11px] font-semibold text-slate-600 mb-1 block">
                       Brand Name
                     </label>
                     <input
@@ -279,15 +277,14 @@ export default function Profile() {
                       value={brandMilkName}
                       onChange={(e) => setBrandMilkName(e.target.value)}
                       placeholder="e.g., Amul, Mother Dairy"
-                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                     />
                   </div>
 
                   {/* Brand Price */}
                   <div>
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                      <i className="fa-solid fa-indian-rupee text-orange-500 text-xs"></i>
-                      💰 Price/L
+                    <label className="text-[11px] font-semibold text-slate-600 mb-1 block">
+                      Price/Liter
                     </label>
                     <input
                       type="number"
@@ -296,14 +293,14 @@ export default function Profile() {
                       value={brandMilkPrice}
                       onChange={(e) => setBrandMilkPrice(e.target.value)}
                       placeholder="Price/L"
-                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg flex gap-2 items-start">
-                <i className="fa-solid fa-circle-info text-sm flex-shrink-0 mt-0.5"></i>
+              <div className="bg-slate-50 border border-slate-200/70 text-slate-600 text-[11px] p-2.5 rounded-xl flex gap-2 items-center">
+                <i className="fa-solid fa-circle-info text-xs text-indigo-600 flex-shrink-0"></i>
                 <p>
                   These prices will auto-fill when adding milk entries. You can
                   edit them anytime.
@@ -312,20 +309,19 @@ export default function Profile() {
             </div>
 
             {/* SAVE BUTTON */}
-
             <button
               onClick={saveProfile}
               disabled={saving}
-              className={`w-full py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 shadow-md ${
+              className={`w-full py-3 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shadow-xs ${
                 saving
-                  ? "bg-blue-400 cursor-not-allowed opacity-75 text-white"
-                  : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                  ? "bg-indigo-400 cursor-not-allowed opacity-75 text-white"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
               }`}
             >
               {saving ? (
                 <>
                   <svg
-                    className="w-5 h-5 animate-spin"
+                    className="w-4 h-4 animate-spin text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -344,25 +340,24 @@ export default function Profile() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Saving...</span>
+                  <span>Saving Profile...</span>
                 </>
               ) : (
                 <>
-                  <i className="fa-solid fa-save"></i>
+                  <i className="fa-solid fa-save text-xs"></i>
                   <span>Save Profile</span>
                 </>
               )}
             </button>
 
             {/* LOGOUT */}
-
-            <div className="mt-6 mb-2">
+            <div className="pt-2">
               <button
                 onClick={logout}
-                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 py-3 rounded-xl font-medium transition-all duration-200"
+                className="w-full flex items-center justify-center gap-2 border border-rose-200 text-rose-600 bg-rose-50/80 hover:bg-rose-100 py-3 rounded-xl font-semibold text-xs transition-all duration-200"
               >
-                <i className="fa-solid fa-right-from-bracket"></i>
-                Logout
+                <i className="fa-solid fa-right-from-bracket text-xs"></i>
+                <span>Logout</span>
               </button>
             </div>
           </>

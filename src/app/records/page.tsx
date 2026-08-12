@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 type MilkEntry = {
   id: string;
@@ -12,20 +13,32 @@ type MilkEntry = {
   total_amount: number;
 };
 
-export default function Records() {
+// Helper for local YYYY-MM-DD string
+function getLocalDateStr(d: Date = new Date()) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function RecordsContent() {
   const router = useRouter();
-  const [searchDate, setSearchDate] = useState("");
+  const searchParams = useSearchParams();
+  const urlDate = searchParams.get("date");
+  const urlToast = searchParams.get("toast");
+
+  // Today's date string YYYY-MM-DD
+  const todayStr = getLocalDateStr(new Date());
+
+  // Selected date defaults to today
+  const [searchDate, setSearchDate] = useState<string>(todayStr);
   const [records, setRecords] = useState<MilkEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(0);
 
   const [milkFilter, setMilkFilter] = useState<
     "all" | "cow" | "buffalo" | "packaged"
-  >("all");
-  const [dateFilter, setDateFilter] = useState<
-    "all" | "today" | "week" | "month"
   >("all");
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,9 +47,38 @@ export default function Records() {
     "success",
   );
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 6;
   const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
+
+  /* ---------------- MILK CALENDAR PRESENTATION STATE ---------------- */
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [calendarViewMode, setCalendarViewMode] = useState<"month" | "week">(
+    "month",
+  );
+  const [allMonthEntries, setAllMonthEntries] = useState<MilkEntry[]>([]);
+
+  // Direction for horizontal slide animation: 1 = next/left, -1 = prev/right
+  const [swipeDirection, setSwipeDirection] = useState<number>(1);
+
+  // Touch Swipe Gesture Refs
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const isSwiping = useRef<boolean>(false);
+
+  // Read URL search parameters (e.g. date & toast message after Add/Edit entry)
+  useEffect(() => {
+    if (urlDate) {
+      setSearchDate(urlDate);
+      setCalendarDate(new Date(urlDate + "T00:00:00"));
+      setCalendarViewMode("week");
+    }
+    if (urlToast) {
+      setToast(urlToast);
+      setMessageType("success");
+      const timer = setTimeout(() => {
+        setToast("");
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [urlDate, urlToast]);
 
   // Load brand milk name from profile
   useEffect(() => {
@@ -54,16 +96,37 @@ export default function Records() {
     loadProfile();
   }, []);
 
-  async function loadRecords(page = 1) {
+  // Fetch month entries for persistent calendar indicator dots
+  useEffect(() => {
+    async function loadMonthEntries() {
+      try {
+        const params = new URLSearchParams({
+          limit: "300",
+          milkType: milkFilter,
+        });
+        const res = await fetch(`/api/milk?${params.toString()}`);
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setAllMonthEntries(data.data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    loadMonthEntries();
+  }, [calendarDate, milkFilter]);
+
+  // Load records exclusively for the selected date
+  async function loadRecordsForDate(targetDate: string) {
     try {
       setLoading(true);
 
       const params = new URLSearchParams({
-        page: String(page),
-        limit: String(recordsPerPage),
-        searchDate,
+        page: "1",
+        limit: "100", // Load all entries for the selected day
+        searchDate: targetDate,
         milkType: milkFilter,
-        dateFilter,
+        dateFilter: "all",
       });
 
       const res = await fetch(`/api/milk?${params.toString()}`);
@@ -71,7 +134,6 @@ export default function Records() {
 
       if (res.ok) {
         setRecords(data.data || []);
-        setTotalRecords(data.total || 0);
       }
     } catch (err) {
       console.log(err);
@@ -81,15 +143,14 @@ export default function Records() {
   }
 
   useEffect(() => {
-    setCurrentPage(1);
-    loadRecords(1);
-  }, [searchDate, milkFilter, dateFilter]);
+    loadRecordsForDate(searchDate || todayStr);
+  }, [searchDate, milkFilter]);
 
   // Refresh records when page becomes visible (returning from edit)
   useEffect(() => {
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
-        loadRecords(currentPage);
+        loadRecordsForDate(searchDate || todayStr);
       }
     }
 
@@ -97,7 +158,7 @@ export default function Records() {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [currentPage]);
+  }, [searchDate]);
 
   async function confirmDelete(id: string) {
     setErrorMessage("");
@@ -121,12 +182,7 @@ export default function Records() {
       setToast("Entry deleted successfully");
       setMessageType("success");
 
-      loadRecords(currentPage);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      loadRecordsForDate(searchDate || todayStr);
 
       setTimeout(() => {
         setToast("");
@@ -142,7 +198,6 @@ export default function Records() {
 
   function formatDate(date: string) {
     const d = date.split("T")[0];
-
     const [year, month, day] = d.split("-");
 
     const months = [
@@ -163,448 +218,849 @@ export default function Records() {
     return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
   }
 
-  /* ---------------- PAGINATION ---------------- */
+  const filteredLiters = records.reduce(
+    (acc, r) => acc + Number(r.liters || 0),
+    0,
+  );
+  const filteredAmount = records.reduce(
+    (acc, r) => acc + Number(r.total_amount || 0),
+    0,
+  );
 
-  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  /* ---------------- CALENDAR HELPER LOGIC ---------------- */
+  const recordsByDateMap = allMonthEntries.reduce<
+    Record<string, { cow: boolean; buffalo: boolean; packaged: boolean }>
+  >((acc, entry) => {
+    const d = entry.date.split("T")[0];
+    if (!acc[d]) {
+      acc[d] = { cow: false, buffalo: false, packaged: false };
+    }
+    if (entry.milk_type === "cow") acc[d].cow = true;
+    if (entry.milk_type === "buffalo") acc[d].buffalo = true;
+    if (entry.milk_type === "packaged") acc[d].packaged = true;
+    return acc;
+  }, {});
 
-  function goToPage(page: number) {
-    setCurrentPage(page);
-    loadRecords(page);
+  const activeSelectedDateStr = searchDate || todayStr;
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+  function handlePrev() {
+    setSwipeDirection(-1);
+    if (calendarViewMode === "month") {
+      setCalendarDate(
+        new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1),
+      );
+    } else {
+      const newD = new Date(calendarDate);
+      newD.setDate(newD.getDate() - 7);
+      setCalendarDate(newD);
+
+      // In week view, if searchDate is not in the new week, update searchDate
+      const newWeekGrid = getWeekGridForDate(newD);
+      const isInNewWeek = newWeekGrid.some((d) => d.dateStr === searchDate);
+      if (!isInNewWeek) {
+        const currentSelDate = new Date(searchDate + "T00:00:00");
+        const dayOfWeekIndex = (currentSelDate.getDay() + 6) % 7;
+        setSearchDate(newWeekGrid[dayOfWeekIndex].dateStr);
+      }
+    }
   }
 
-  const groupedRecords = records.reduce(
-    (groups: Record<string, MilkEntry[]>, entry) => {
-      const dateKey = entry.date.split("T")[0];
+  function handleNext() {
+    setSwipeDirection(1);
+    if (calendarViewMode === "month") {
+      setCalendarDate(
+        new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1),
+      );
+    } else {
+      const newD = new Date(calendarDate);
+      newD.setDate(newD.getDate() + 7);
+      setCalendarDate(newD);
 
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
+      // In week view, if searchDate is not in the new week, update searchDate
+      const newWeekGrid = getWeekGridForDate(newD);
+      const isInNewWeek = newWeekGrid.some((d) => d.dateStr === searchDate);
+      if (!isInNewWeek) {
+        const currentSelDate = new Date(searchDate + "T00:00:00");
+        const dayOfWeekIndex = (currentSelDate.getDay() + 6) % 7;
+        setSearchDate(newWeekGrid[dayOfWeekIndex].dateStr);
       }
+    }
+  }
 
-      groups[dateKey].push(entry);
+  function handleGoToToday() {
+    const now = new Date();
+    const today = getLocalDateStr(now);
+    setSwipeDirection(1);
+    setCalendarDate(now);
+    setSearchDate(today);
+  }
 
-      return groups;
+  // Tapping ANY date in Month View automatically transitions to Week View
+  // centered on that date's week, and selects the date!
+  function handleDateClick(dateStr: string) {
+    if (isSwiping.current) return;
+
+    setSearchDate(dateStr);
+    setCalendarDate(new Date(dateStr + "T00:00:00"));
+
+    if (calendarViewMode === "month") {
+      setSwipeDirection(1);
+      setCalendarViewMode("week");
+    }
+  }
+
+  // Generate Month Grid
+  function getMonthGrid() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
+    const totalDays = lastDay.getDate();
+
+    const days: {
+      dateStr: string;
+      dayNumber: number;
+      isCurrentMonth: boolean;
+    }[] = [];
+
+    // Prev month padding
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      const pDay = prevMonthLastDay - i;
+      const pDate = new Date(year, month - 1, pDay);
+      const dateStr = getLocalDateStr(pDate);
+      days.push({
+        dateStr,
+        dayNumber: pDay,
+        isCurrentMonth: false,
+      });
+    }
+
+    // Current month days
+    for (let i = 1; i <= totalDays; i++) {
+      const cDate = new Date(year, month, i);
+      const dateStr = getLocalDateStr(cDate);
+      days.push({
+        dateStr,
+        dayNumber: i,
+        isCurrentMonth: true,
+      });
+    }
+
+    // Next month padding
+    const remaining = (7 - (days.length % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      const nDate = new Date(year, month + 1, i);
+      const dateStr = getLocalDateStr(nDate);
+      days.push({
+        dateStr,
+        dayNumber: i,
+        isCurrentMonth: false,
+      });
+    }
+
+    return days;
+  }
+
+  // Helper to generate week grid for any reference date
+  function getWeekGridForDate(refDate: Date) {
+    const current = new Date(refDate);
+    const dayOfWeek = (current.getDay() + 6) % 7;
+
+    const monday = new Date(current);
+    monday.setDate(current.getDate() - dayOfWeek);
+
+    const week: {
+      dateStr: string;
+      dayNumber: number;
+      dayLabel: string;
+      isToday: boolean;
+    }[] = [];
+
+    const dayLabels = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = getLocalDateStr(d);
+
+      week.push({
+        dateStr,
+        dayNumber: d.getDate(),
+        dayLabel: dayLabels[i],
+        isToday: dateStr === todayStr,
+      });
+    }
+
+    return week;
+  }
+
+  // Generate Week Grid centered on reference date
+  function getWeekGrid() {
+    return getWeekGridForDate(calendarDate);
+  }
+
+  // Week range label (e.g. 10 – 16 Aug)
+  function getWeekRangeLabel() {
+    const week = getWeekGrid();
+    if (week.length === 0) return "";
+    const start = new Date(week[0].dateStr + "T00:00:00");
+    const end = new Date(week[6].dateStr + "T00:00:00");
+
+    const startDay = start.getDate();
+    const endDay = end.getDate();
+    const monthName = end.toLocaleDateString("en-US", { month: "short" });
+
+    return `${startDay} – ${endDay} ${monthName}`;
+  }
+
+  // Touch gesture handlers for mobile horizontal swipe
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartPos.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+    isSwiping.current = false;
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!touchStartPos.current) return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = touchStartPos.current.x - currentX;
+    const deltaY = touchStartPos.current.y - currentY;
+
+    if (Math.abs(deltaX) > 15 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+      isSwiping.current = true;
+    }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (!touchStartPos.current) return;
+    const touchEndClientX = e.changedTouches[0].clientX;
+    const deltaX = touchStartPos.current.x - touchEndClientX;
+
+    if (isSwiping.current && Math.abs(deltaX) > 40) {
+      if (deltaX > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+
+    touchStartPos.current = null;
+    setTimeout(() => {
+      isSwiping.current = false;
+    }, 100);
+  }
+
+  // Calculate if Today button should be displayed
+  const currentRealDate = new Date();
+  const currentRealYear = currentRealDate.getFullYear();
+  const currentRealMonth = currentRealDate.getMonth();
+
+  let isAwayFromToday = false;
+  if (calendarViewMode === "month") {
+    const viewingYear = calendarDate.getFullYear();
+    const viewingMonth = calendarDate.getMonth();
+    if (
+      viewingYear !== currentRealYear ||
+      viewingMonth !== currentRealMonth ||
+      activeSelectedDateStr !== todayStr
+    ) {
+      isAwayFromToday = true;
+    }
+  } else {
+    const weekDays = getWeekGrid();
+    const containsToday = weekDays.some((d) => d.dateStr === todayStr);
+    if (!containsToday || activeSelectedDateStr !== todayStr) {
+      isAwayFromToday = true;
+    }
+  }
+
+  // Framer motion variants for directional horizontal slide transition
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
     },
-    {},
-  );
+    exit: (direction: number) => ({
+      x: direction > 0 ? -100 : 100,
+      opacity: 0,
+    }),
+  };
 
   /* ------------------------------------------------ */
 
   return (
     <>
-      {/* SUCCESS TOAST */}
-
+      {/* SUCCESS / ERROR TOAST */}
       {toast && (
         <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 shadow-lg ${
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 p-3.5 px-5 rounded-2xl border flex items-center gap-3 text-xs font-semibold transition-all duration-300 shadow-lg ${
             messageType === "success"
-              ? "bg-green-50 border-green-300 text-green-700"
-              : "bg-red-50 border-red-300 text-red-700"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+              : "bg-rose-50 border-rose-200 text-rose-700"
           }`}
         >
           {messageType === "success" ? (
-            <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+            <i className="fa-solid fa-circle-check text-emerald-500 text-sm flex-shrink-0"></i>
           ) : (
-            <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+            <i className="fa-solid fa-circle-xmark text-rose-500 text-sm flex-shrink-0"></i>
           )}
           <span>{toast}</span>
         </div>
       )}
 
-      <div className="min-h-screen bg-gray-100 pb-24">
-        <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
+      <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
+        <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* PAGE HEADER */}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                Milk Calendar
+              </h1>
+              <p className="text-xs font-medium text-slate-500 mt-0.5">
+                Track your daily milk records
+              </p>
+            </div>
 
-          <div>
-            <h1 className="text-2xl font-semibold">Milk Records</h1>
-
-            <p className="text-sm text-gray-500">
-              View and manage your milk entries
-            </p>
+            <button
+              type="button"
+              onClick={() => router.push("/entries")}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-2xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 flex-shrink-0"
+            >
+              <i className="fa-solid fa-plus text-xs"></i>
+              <span>Add Milk Entry</span>
+            </button>
           </div>
 
-          {/* SEARCH BAR */}
-          <div className="bg-white rounded-2xl shadow-md p-4 space-y-3 border border-gray-100">
-            {/* DATE SEARCH LABEL */}
-            <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-              <i className="fa-solid fa-calendar text-blue-600"></i>
-              Search by Date
-            </label>
-
-            {/* DATE SEARCH */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <div className="relative flex-1 min-w-[180px]">
-                <i className="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-
-                <input
-                  type="date"
-                  value={searchDate}
-                  onChange={(e) => setSearchDate(e.target.value)}
-                  max={new Date().toISOString().slice(0, 10)}
-                  className="w-full border-2 border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                />
+          {/* TOP CALENDAR CONTROL BAR */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                <i className="fa-solid fa-calendar-days text-sm"></i>
               </div>
-
-              {(searchDate || milkFilter !== "all" || dateFilter !== "all") && (
-                <button
-                  onClick={() => {
-                    setSearchDate("");
-                    setMilkFilter("all");
-                    setDateFilter("all");
-                  }}
-                  className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
-                >
-                  <i className="fa-solid fa-xmark text-sm"></i>
-                </button>
-              )}
+              <span className="text-xs font-bold text-slate-900">
+                {calendarViewMode === "month"
+                  ? calendarDate.toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : getWeekRangeLabel()}
+              </span>
             </div>
 
-            {/* QUICK DATE FILTERS */}
-            <div className="flex gap-2 flex-wrap">
-              {["today", "week", "month"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() =>
-                    setDateFilter(type as "today" | "week" | "month")
-                  }
-                  className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
-                    dateFilter === type
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-600 shadow-sm"
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {type === "today"
-                    ? "Today"
-                    : type === "week"
-                      ? "This Week"
-                      : "This Month"}
-                </button>
-              ))}
-            </div>
-
-            {/* MILK TYPE FILTER */}
-            <div className="flex gap-2 flex-wrap">
+            {/* MONTH / WEEK SEGMENTED TOGGLE */}
+            <div className="flex p-0.5 bg-slate-100/90 rounded-xl border border-slate-200/60">
               <button
-                onClick={() => setMilkFilter("all")}
-                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
-                  milkFilter === "all"
-                    ? "bg-gray-800 text-white border-gray-800 shadow-sm"
-                    : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                type="button"
+                onClick={() => {
+                  setSwipeDirection(1);
+                  setCalendarViewMode("month");
+                }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 ${
+                  calendarViewMode === "month"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
-                All
+                <i className="fa-solid fa-calendar text-[10px]"></i>
+                <span>Month</span>
               </button>
-
               <button
-                onClick={() => setMilkFilter("buffalo")}
-                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
-                  milkFilter === "buffalo"
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-600 shadow-sm"
-                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                type="button"
+                onClick={() => {
+                  setSwipeDirection(1);
+                  setCalendarViewMode("week");
+                }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 ${
+                  calendarViewMode === "week"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
-                🐃 Buffalo
-              </button>
-
-              <button
-                onClick={() => setMilkFilter("cow")}
-                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
-                  milkFilter === "cow"
-                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white border-green-600 shadow-sm"
-                    : "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
-                }`}
-              >
-                🐄 Cow
-              </button>
-
-              <button
-                onClick={() => setMilkFilter("packaged")}
-                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
-                  milkFilter === "packaged"
-                    ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white border-orange-600 shadow-sm"
-                    : "bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200"
-                }`}
-              >
-                🥛 Packaged
+                <i className="fa-solid fa-calendar-week text-[10px]"></i>
+                <span>Week</span>
               </button>
             </div>
           </div>
-          {/* ERROR MESSAGE */}
 
-          {errorMessage && (
-            <div className="bg-red-50 border-2 border-red-300 text-red-700 text-sm p-4 rounded-xl flex items-center gap-3">
-              <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
-              <span className="font-medium">{errorMessage}</span>
-            </div>
-          )}
+          {/* MAIN MILK CALENDAR CARD */}
+          <div
+            className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-6 space-y-4 select-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* MONTH / WEEK TITLE ROW & NAV ARROWS */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                  {calendarViewMode === "month"
+                    ? calendarDate.toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : getWeekRangeLabel()}
+                </h2>
 
-          {/* LOADING */}
-
-          {loading && (
-            <p className="text-gray-500 text-sm">Loading records...</p>
-          )}
-
-          {/* EMPTY STATE - NO RECORDS & NO FILTERS */}
-
-          {!loading &&
-            records.length === 0 &&
-            !searchDate &&
-            milkFilter === "all" &&
-            dateFilter === "all" && (
-              <div className="bg-white rounded-2xl shadow-md p-8 text-center border border-gray-100">
-                <i className="fa-solid fa-database text-gray-300 text-4xl mb-3"></i>
-
-                <p className="text-gray-600 font-medium">No milk entries yet</p>
-                <p className="text-gray-500 text-sm mt-1">
-                  Start by adding your first milk entry
-                </p>
+                {/* TODAY BUTTON - Appears when navigated away from Today */}
+                {isAwayFromToday && (
+                  <button
+                    type="button"
+                    onClick={handleGoToToday}
+                    className="px-2.5 py-1 text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 active:scale-95 rounded-xl border border-blue-200/80 transition flex items-center gap-1 shadow-2xs cursor-pointer"
+                    title="Return to Today"
+                  >
+                    <span>Today</span>
+                  </button>
+                )}
               </div>
-            )}
 
-          {/* NO SEARCH RESULTS STATE */}
-
-          {!loading &&
-            records.length === 0 &&
-            (searchDate || milkFilter !== "all" || dateFilter !== "all") && (
-              <div className="bg-white rounded-2xl shadow-md p-8 text-center border border-gray-100">
-                <i className="fa-solid fa-magnifying-glass text-gray-300 text-4xl mb-3"></i>
-
-                <p className="text-gray-600 font-medium">No records found</p>
-
-                <p className="text-gray-500 text-sm mt-1">
-                  Try changing your search or filters
-                </p>
-
+              <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => {
-                    setSearchDate("");
-                    setMilkFilter("all");
-                    setDateFilter("all");
-                  }}
-                  className="mt-4 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                  type="button"
+                  onClick={handlePrev}
+                  className="w-8 h-8 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 flex items-center justify-center transition shadow-xs cursor-pointer"
+                  title="Previous"
+                  aria-label="Previous"
                 >
-                  Clear filters
+                  <i className="fa-solid fa-chevron-left text-[11px]"></i>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="w-8 h-8 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 flex items-center justify-center transition shadow-xs cursor-pointer"
+                  title="Next"
+                  aria-label="Next"
+                >
+                  <i className="fa-solid fa-chevron-right text-[11px]"></i>
                 </button>
               </div>
-            )}
+            </div>
 
-          {/* RECORDS LIST */}
+            {/* MILK TYPE LEGEND BAR */}
+            <div className="bg-slate-50/80 border border-slate-100 rounded-full py-1.5 px-4 flex items-center justify-center gap-4 text-[11px] font-semibold text-slate-600">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Cow Milk</span>
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span>Buffalo</span>
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Packaged</span>
+              </span>
+            </div>
 
-          {records.length > 0 && (
-            <div className="space-y-6">
-              {Object.entries(groupedRecords)
-                .sort((a, b) => b[0].localeCompare(a[0]))
-                .map(([date, entries]) => (
-                  <div key={date}>
-                    {/* DATE HEADER */}
-                    <div className="flex items-center justify-between mb-2.5">
-                      <p className="text-sm font-semibold text-gray-800">
-                        {formatDate(date)}
-                      </p>
+            {/* APPLE CALENDAR MORPH TRANSITION (MONTH <-> WEEK) & HORIZONTAL SWIPE SLIDE */}
+            <AnimatePresence mode="wait" initial={false}>
+              {calendarViewMode === "month" ? (
+                <motion.div
+                  key="month-view"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="space-y-2 overflow-hidden"
+                >
+                  {/* WEEKDAY HEADERS */}
+                  <div className="grid grid-cols-7 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider py-1">
+                    <span>MON</span>
+                    <span>TUE</span>
+                    <span>WED</span>
+                    <span>THU</span>
+                    <span>FRI</span>
+                    <span>SAT</span>
+                    <span>SUN</span>
+                  </div>
 
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                        {entries.length}
-                      </span>
-                    </div>
+                  {/* GRID DAYS WITH HORIZONTAL SWIPE SLIDE */}
+                  <AnimatePresence mode="wait" initial={false} custom={swipeDirection}>
+                    <motion.div
+                      key={`${calendarDate.getFullYear()}-${calendarDate.getMonth()}-month-grid`}
+                      custom={swipeDirection}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="grid grid-cols-7 gap-1 sm:gap-1.5 text-center"
+                    >
+                      {getMonthGrid().map((dayObj, idx) => {
+                        const isSelected = activeSelectedDateStr === dayObj.dateStr;
+                        const isToday = dayObj.dateStr === todayStr;
+                        const hasRecord = recordsByDateMap[dayObj.dateStr];
 
-                    <div className="border-b mb-3"></div>
-
-                    {/* ENTRIES */}
-                    <div className="space-y-2.5">
-                      {entries.map((entry) => (
-                        <div
-                          key={entry.id}
-                          className={`bg-white rounded-xl shadow-md p-4 border-l-4 hover:shadow-lg transition ${
-                            entry.milk_type === "cow"
-                              ? "border-green-500"
-                              : entry.milk_type === "buffalo"
-                                ? "border-blue-500"
-                                : "border-orange-500"
-                          }`}
-                        >
-                          {/* HEADER - BADGE + TOTAL */}
-                          <div className="flex items-center justify-between mb-3">
-                            <span
-                              className={`text-xs px-3 py-0.5 rounded-full font-medium flex items-center gap-1 ${
-                                entry.milk_type === "cow"
-                                  ? "bg-green-100 text-green-700"
-                                  : entry.milk_type === "buffalo"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-orange-100 text-orange-700"
+                        return (
+                          <div
+                            key={`${dayObj.dateStr}-${idx}`}
+                            className="flex flex-col items-center py-1 min-h-[44px] justify-between"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleDateClick(dayObj.dateStr)}
+                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-blue-600 text-white font-extrabold shadow-md scale-105"
+                                  : isToday
+                                    ? "border-2 border-blue-600 text-blue-600 font-bold bg-blue-50/50"
+                                    : dayObj.isCurrentMonth
+                                      ? "text-slate-800 font-semibold hover:bg-indigo-50 hover:text-blue-600"
+                                      : "text-slate-300 font-normal hover:bg-slate-50 hover:text-slate-500"
                               }`}
                             >
-                              {entry.milk_type === "cow"
-                                ? "🐄 Cow"
-                                : entry.milk_type === "buffalo"
-                                  ? "🐃 Buffalo"
-                                  : `🥛 ${brandMilkName}`}
-                            </span>
-                            <p className="text-sm font-bold text-green-600">
-                              ₹{Number(entry.total_amount).toFixed(2)}
-                            </p>
-                          </div>
-
-                          {/* INFO ROW - HORIZONTAL */}
-                          <div className="flex items-center justify-between gap-4 mb-4">
-                            {/* LITERS */}
-                            <div className="flex items-center gap-2.5">
-                              <i className="fa-solid fa-droplet text-blue-500 text-sm flex-shrink-0"></i>
-                              <div>
-                                <p className="text-xs text-gray-500">Liters</p>
-                                <p className="text-sm font-semibold text-gray-800">
-                                  {entry.liters}L
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* SEPARATOR */}
-                            <div className="h-8 border-l border-gray-300 flex-shrink-0"></div>
-
-                            {/* PRICE PER LITER */}
-                            <div>
-                              <p className="text-xs text-gray-500">Price/L</p>
-                              <p className="text-sm font-semibold text-gray-800">
-                                ₹{entry.price_per_liter}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* ACTION BUTTONS */}
-                          <div className="flex gap-2 pt-0.5">
-                            <button
-                              onClick={() =>
-                                router.push(`/entries?id=${entry.id}`)
-                              }
-                              className="flex-1 max-w-sm flex items-center justify-center gap-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-semibold hover:bg-blue-100 transition border border-blue-200"
-                            >
-                              <i className="fa-solid fa-pen text-xs"></i>
-                              Edit
+                              {dayObj.dayNumber}
                             </button>
 
-                            <button
-                              onClick={() => setDeleteId(entry.id)}
-                              className="flex-1 max-w-sm flex items-center justify-center gap-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-semibold hover:bg-red-100 transition border border-red-200"
-                            >
-                              <i className="fa-solid fa-trash text-xs"></i>
-                              Delete
-                            </button>
-                          </div>
-
-                          {/* DELETE CONFIRM */}
-                          {deleteId === entry.id && (
-                            <div className="mt-3 border-t pt-3 space-y-2.5 bg-red-50 rounded-lg p-3 border border-red-200">
-                              <div className="flex items-center gap-2">
-                                <i className="fa-solid fa-exclamation-circle text-red-600 text-sm"></i>
-                                <p className="text-xs font-semibold text-red-700">
-                                  Delete this entry?
-                                </p>
-                              </div>
-
-                              <p className="text-xs text-red-600 ml-5">
-                                This action cannot be undone.
-                              </p>
-
-                              <div className="flex gap-2 pt-1">
-                                <button
-                                  onClick={() => setDeleteId(null)}
-                                  disabled={deleting}
-                                  className="flex-1 border-2 border-gray-300 text-gray-700 text-xs py-2 rounded-lg font-semibold hover:bg-gray-100 disabled:opacity-50 transition"
-                                >
-                                  Cancel
-                                </button>
-
-                                <button
-                                  onClick={() => confirmDelete(entry.id)}
-                                  disabled={deleting}
-                                  className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 font-semibold transition ${
-                                    deleting
-                                      ? "bg-red-400 text-white cursor-not-allowed opacity-75"
-                                      : "bg-red-600 text-white hover:bg-red-700 shadow-sm"
+                            {/* RECORD INDICATOR DOTS */}
+                            <div className="flex gap-0.5 items-center justify-center h-1.5 mt-0.5">
+                              {hasRecord?.buffalo && (
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    isSelected ? "bg-white" : "bg-blue-500"
                                   }`}
-                                >
-                                  {deleting ? (
-                                    <>
-                                      <svg
-                                        className="w-3 h-3 animate-spin"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <circle
-                                          className="opacity-25"
-                                          cx="12"
-                                          cy="12"
-                                          r="10"
-                                          stroke="currentColor"
-                                          strokeWidth="4"
-                                        ></circle>
-                                        <path
-                                          className="opacity-75"
-                                          fill="currentColor"
-                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                      </svg>
-                                      <span>Deleting...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <i className="fa-solid fa-trash text-xs"></i>
-                                      <span>Delete</span>
-                                    </>
-                                  )}
-                                </button>
-                              </div>
+                                  title="Buffalo Milk"
+                                />
+                              )}
+                              {hasRecord?.cow && (
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    isSelected ? "bg-emerald-200" : "bg-emerald-500"
+                                  }`}
+                                  title="Cow Milk"
+                                />
+                              )}
+                              {hasRecord?.packaged && (
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    isSelected ? "bg-amber-200" : "bg-amber-500"
+                                  }`}
+                                  title="Packaged Milk"
+                                />
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="week-view"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="py-1 overflow-hidden"
+                >
+                  <AnimatePresence mode="wait" initial={false} custom={swipeDirection}>
+                    <motion.div
+                      key={`${getWeekRangeLabel()}-week-grid`}
+                      custom={swipeDirection}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="grid grid-cols-7 gap-1 sm:gap-1.5 text-center"
+                    >
+                      {getWeekGrid().map((dayObj) => {
+                        const isSelected = activeSelectedDateStr === dayObj.dateStr;
+                        const isToday = dayObj.dateStr === todayStr;
+                        const hasRecord = recordsByDateMap[dayObj.dateStr];
+
+                        return (
+                          <div
+                            key={dayObj.dateStr}
+                            onClick={() => handleDateClick(dayObj.dateStr)}
+                            className={`flex flex-col items-center py-1.5 px-0.5 rounded-xl cursor-pointer transition-all border min-h-[46px] justify-between ${
+                              isSelected
+                                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                                : isToday
+                                  ? "bg-blue-50/80 border-2 border-blue-600 text-slate-800"
+                                  : "bg-slate-50/70 border-slate-200/80 hover:bg-blue-50/60 text-slate-700"
+                            }`}
+                          >
+                            <span
+                              className={`text-[9px] font-bold uppercase tracking-tight mb-0.5 ${
+                                isSelected
+                                  ? "text-blue-100"
+                                  : isToday
+                                    ? "text-blue-600 font-extrabold"
+                                    : "text-slate-400"
+                              }`}
+                            >
+                              {dayObj.dayLabel}
+                            </span>
+
+                            <span
+                              className={`text-xs font-bold ${
+                                isSelected
+                                  ? "text-white font-extrabold"
+                                  : isToday
+                                    ? "text-blue-600 font-extrabold"
+                                    : "text-slate-900"
+                              }`}
+                            >
+                              {dayObj.dayNumber}
+                            </span>
+
+                            {/* RECORD INDICATOR DOTS */}
+                            <div className="flex gap-0.5 items-center justify-center h-1 mt-0.5">
+                              {hasRecord?.buffalo && (
+                                <span
+                                  className={`w-1 h-1 rounded-full ${
+                                    isSelected ? "bg-white" : "bg-blue-500"
+                                  }`}
+                                />
+                              )}
+                              {hasRecord?.cow && (
+                                <span
+                                  className={`w-1 h-1 rounded-full ${
+                                    isSelected ? "bg-emerald-200" : "bg-emerald-500"
+                                  }`}
+                                />
+                              )}
+                              {hasRecord?.packaged && (
+                                <span
+                                  className={`w-1 h-1 rounded-full ${
+                                    isSelected ? "bg-amber-200" : "bg-amber-500"
+                                  }`}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ERROR MESSAGE */}
+          {errorMessage && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3.5 rounded-2xl flex items-center gap-2.5">
+              <i className="fa-solid fa-circle-xmark text-sm flex-shrink-0"></i>
+              <span className="font-semibold">{errorMessage}</span>
             </div>
           )}
 
-          {/* PAGINATION */}
+          {/* LOADING STATE */}
+          {loading && (
+            <p className="text-slate-500 text-xs font-medium text-center py-4">
+              Loading daily records...
+            </p>
+          )}
 
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pt-6 flex-wrap">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => goToPage(currentPage - 1)}
-                className="px-3 py-2 border-0 bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
-              >
-                <i className="fa-solid fa-chevron-left"></i>
-              </button>
+          {/* DAILY RECORDS SECTION */}
+          {!loading && (
+            <div className="space-y-3 pt-2">
+              <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                DAILY RECORDS
+              </p>
 
-              {Array.from({ length: totalPages }).map((_, index) => {
-                const page = index + 1;
+              {/* SELECTED DATE SUMMARY HEADER CARD */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-extrabold text-slate-900">
+                    {new Date(
+                      activeSelectedDateStr + "T00:00:00",
+                    ).toLocaleDateString("en-US", { weekday: "long" })}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                    {formatDate(activeSelectedDateStr)}
+                  </p>
+                </div>
 
-                return (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition ${
-                      currentPage === page
-                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-600"
-                        : "bg-white text-gray-700 border-gray-200 hover:border-blue-300"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+                {records.length > 0 && (
+                  <div className="flex items-center gap-3 text-right bg-slate-50 border border-slate-200/70 px-3.5 py-1.5 rounded-xl">
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                        Volume
+                      </p>
+                      <p className="text-xs font-extrabold text-indigo-700">
+                        {filteredLiters.toFixed(2)} L
+                      </p>
+                    </div>
+                    <div className="h-6 border-l border-slate-200"></div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                        Day Total
+                      </p>
+                      <p className="text-xs font-extrabold text-emerald-600">
+                        ₹{filteredAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => goToPage(currentPage + 1)}
-                className="px-3 py-2 border-0 bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
-              >
-                <i className="fa-solid fa-chevron-right"></i>
-              </button>
+              {/* EMPTY STATE FOR SELECTED DATE */}
+              {records.length === 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl shadow-xs">
+                    <i className="fa-solid fa-droplet text-indigo-500"></i>
+                  </div>
+                  <div>
+                    <h4 className="text-slate-900 font-extrabold text-sm">
+                      No milk records
+                    </h4>
+                    <p className="text-slate-500 text-xs mt-1 max-w-xs mx-auto">
+                      No milk was recorded for{" "}
+                      {new Date(
+                        activeSelectedDateStr + "T00:00:00",
+                      ).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                      })}
+                      .
+                    </p>
+                  </div>
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      onClick={() =>
+                        router.push(`/entries?date=${activeSelectedDateStr}`)
+                      }
+                      className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs flex items-center gap-2"
+                    >
+                      <i className="fa-solid fa-plus text-xs"></i>
+                      <span>Add Milk Entry</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SELECTED DAY MILK RECORDS CARDS */}
+              {records.length > 0 && (
+                <div className="space-y-2.5">
+                  {records.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 border-l-4 transition hover:border-slate-300 ${
+                        entry.milk_type === "cow"
+                          ? "border-l-emerald-500"
+                          : entry.milk_type === "buffalo"
+                            ? "border-l-blue-500"
+                            : "border-l-amber-500"
+                      }`}
+                    >
+                      {/* BADGE + TOTAL AMOUNT */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span
+                          className={`text-[11px] px-2.5 py-0.5 rounded-lg font-semibold flex items-center gap-1 ${
+                            entry.milk_type === "cow"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                              : entry.milk_type === "buffalo"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200/60"
+                                : "bg-amber-50 text-amber-700 border border-amber-200/60"
+                          }`}
+                        >
+                          {entry.milk_type === "cow"
+                            ? "🐄 Cow Milk"
+                            : entry.milk_type === "buffalo"
+                              ? "🐃 Buffalo Milk"
+                              : `🥛 ${brandMilkName}`}
+                        </span>
+                        <p className="text-sm font-bold text-emerald-600">
+                          ₹{Number(entry.total_amount).toFixed(2)}
+                        </p>
+                      </div>
+
+                      {/* COMPACT INFO ROW */}
+                      <div className="flex items-center justify-between bg-slate-50/80 rounded-xl px-3 py-2 mb-2.5 text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-500 font-medium mr-1.5">
+                            Quantity:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            {entry.liters} L
+                          </span>
+                        </div>
+                        <div className="h-4 border-l border-slate-200"></div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 font-medium mr-1.5">
+                            Rate:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            ₹{entry.price_per_liter}/L
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* ACTION BUTTONS */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            router.push(`/entries?id=${entry.id}`)
+                          }
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-50/80 text-indigo-600 py-1.5 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition border border-indigo-200/60"
+                        >
+                          <i className="fa-solid fa-pen text-[10px]"></i>
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          onClick={() => setDeleteId(entry.id)}
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-rose-50/80 text-rose-600 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-100 transition border border-rose-200/60"
+                        >
+                          <i className="fa-solid fa-trash text-[10px]"></i>
+                          <span>Delete</span>
+                        </button>
+                      </div>
+
+                      {/* DELETE CONFIRMATION DIALOG */}
+                      {deleteId === entry.id && (
+                        <div className="mt-3 space-y-2 bg-rose-50/90 rounded-xl p-3 border border-rose-200">
+                          <div className="flex items-center gap-2 text-rose-800">
+                            <i className="fa-solid fa-circle-exclamation text-xs"></i>
+                            <p className="text-xs font-bold">
+                              Delete this entry?
+                            </p>
+                          </div>
+                          <p className="text-[11px] text-rose-700">
+                            This action will permanently remove this milk record.
+                          </p>
+
+                          <div className="flex gap-2 pt-1">
+                            <button
+                              onClick={() => setDeleteId(null)}
+                              disabled={deleting}
+                              className="flex-1 bg-white border border-slate-300 text-slate-700 text-xs py-1.5 rounded-lg font-semibold hover:bg-slate-50 transition"
+                            >
+                              Cancel
+                            </button>
+
+                            <button
+                              onClick={() => confirmDelete(entry.id)}
+                              disabled={deleting}
+                              className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition"
+                            >
+                              {deleting ? "Deleting..." : "Confirm Delete"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -612,3 +1068,18 @@ export default function Records() {
     </>
   );
 }
+
+export default function Records() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50/70 p-8 text-center text-xs font-semibold text-slate-500">
+          Loading Calendar...
+        </div>
+      }
+    >
+      <RecordsContent />
+    </Suspense>
+  );
+}
+

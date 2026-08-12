@@ -17,6 +17,8 @@ export default function Login() {
   }>({});
   const [loading, setLoading] = useState(false);
 
+  const [autoFilled, setAutoFilled] = useState(false);
+
   // Load saved email and remember preference on mount
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
@@ -25,6 +27,7 @@ export default function Login() {
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRemember(true);
+      setAutoFilled(true);
     }
   }, []);
 
@@ -105,53 +108,53 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-50 to-gray-50 px-4 py-8">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-4 space-y-3">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50/80 px-4 py-8 text-slate-900">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-lg p-6 sm:p-8 space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl">
-              <i className="fa-solid fa-droplet text-xl"></i>
+        <div className="text-center space-y-1.5">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xs">
+              <i className="fa-solid fa-droplet text-lg"></i>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Milk Tracker</h1>
-          <p className="text-gray-500 text-sm">
-            Login to manage your milk records
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Milk Tracker</h1>
+          <p className="text-xs text-slate-500 font-medium">
+            Sign in to manage your daily milk records
           </p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg flex items-center gap-2">
-            <i className="fa-solid fa-circle-exclamation"></i>
-            {error}
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl flex items-center gap-2 font-medium">
+            <i className="fa-solid fa-circle-exclamation text-rose-500"></i>
+            <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-3.5">
           {/* Email */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-semibold text-gray-700">
+              <label className="text-xs font-semibold text-slate-700">
                 Email Address
               </label>
-              {email && localStorage.getItem("rememberedEmail") === email && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
-                  <i className="fa-solid fa-check text-xs"></i>
+              {autoFilled && email && (
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                  <i className="fa-solid fa-check text-[10px]"></i>
                   Auto-filled
                 </span>
               )}
             </div>
             <div className="relative">
-              <i className="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
               <input
                 type="email"
                 name="email"
                 placeholder="you@example.com"
-                className={`w-full border-2 rounded-lg pl-11 pr-4 py-3 text-sm focus:outline-none transition ${
+                className={`w-full border rounded-xl pl-9 pr-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                   fieldErrors.email
-                    ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                    : "border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 }`}
                 value={email}
                 onChange={(e) => {
@@ -162,28 +165,28 @@ export default function Login() {
               />
             </div>
             {fieldErrors.email && (
-              <p className="text-red-500 text-xs flex items-center gap-1">
-                <i className="fa-solid fa-exclamation-circle text-xs"></i>
+              <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                 {fieldErrors.email}
               </p>
             )}
           </div>
 
           {/* Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700">
               Password
             </label>
             <div className="relative">
-              <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <i className="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
-                className={`w-full border-2 rounded-lg pl-11 pr-11 py-3 text-sm focus:outline-none transition ${
+                className={`w-full border rounded-xl pl-9 pr-10 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                   fieldErrors.password
-                    ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                    : "border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 }`}
                 value={password}
                 onChange={(e) => {
@@ -195,48 +198,48 @@ export default function Login() {
               <i
                 className={`fa-solid ${
                   showPassword ? "fa-eye-slash" : "fa-eye"
-                } absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition`}
+                } absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-slate-600 text-xs transition`}
                 onClick={() => !loading && setShowPassword(!showPassword)}
               ></i>
             </div>
             {fieldErrors.password && (
-              <p className="text-red-500 text-xs flex items-center gap-1">
-                <i className="fa-solid fa-exclamation-circle text-xs"></i>
+              <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                 {fieldErrors.password}
               </p>
             )}
           </div>
 
           {/* Remember + Forgot */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center text-sm">
-              <label className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 cursor-pointer transition">
+          <div className="space-y-2 pt-1">
+            <div className="flex justify-between items-center text-xs">
+              <label className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 cursor-pointer transition">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
                   disabled={loading}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20"
                 />
-                <span>Remember me</span>
+                <span className="font-medium">Remember me</span>
                 {remember && (
-                  <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                    <i className="fa-solid fa-check-circle text-xs"></i>
-                    Remembered
+                  <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-1.5 py-0.5 rounded-md text-[10px] font-semibold">
+                    <i className="fa-solid fa-check text-[9px]"></i>
+                    Saved
                   </span>
                 )}
               </label>
               <a
                 href="/reset-password"
-                className="text-blue-600 hover:text-blue-700 font-medium transition"
+                className="text-indigo-600 hover:text-indigo-700 font-semibold transition"
               >
                 Forgot?
               </a>
             </div>
 
             {email && remember && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-2 rounded-lg flex items-center gap-2">
-                <i className="fa-solid fa-info-circle"></i>
+              <div className="bg-slate-50 border border-slate-200 text-slate-600 text-[11px] p-2 rounded-xl flex items-center gap-2">
+                <i className="fa-solid fa-info-circle text-indigo-600"></i>
                 <span>Your email will be auto-filled on this device</span>
               </div>
             )}
@@ -246,16 +249,16 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2 mt-6 ${
+            className={`w-full py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center space-x-2 shadow-xs mt-4 ${
               loading
-                ? "bg-blue-400 cursor-not-allowed opacity-75"
-                : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-            } text-white`}
+                ? "bg-indigo-400 cursor-not-allowed opacity-75 text-white"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+            }`}
           >
             {loading ? (
               <>
                 <svg
-                  className="w-5 h-5 animate-spin"
+                  className="w-4 h-4 animate-spin text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -278,35 +281,35 @@ export default function Login() {
               </>
             ) : (
               <>
-                <i className="fa-solid fa-sign-in-alt"></i>
-                <span>Login</span>
+                <i className="fa-solid fa-sign-in-alt text-xs"></i>
+                <span>Sign In</span>
               </>
             )}
           </button>
         </form>
 
         {/* Divider */}
-        <div className="relative">
+        <div className="relative pt-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-slate-200"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">New user?</span>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-white text-slate-400 font-medium">New to Milk Tracker?</span>
           </div>
         </div>
 
         {/* Register Link */}
-        <a href="/register">
-          <button className="w-full border-2 border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-500 py-3 rounded-lg text-blue-600 font-semibold transition shadow-md">
+        <a href="/register" className="block">
+          <button className="w-full border border-slate-200 bg-slate-50/80 hover:bg-slate-100 py-2.5 rounded-xl text-slate-700 font-semibold text-xs transition">
             Create Account
           </button>
         </a>
 
         {/* Admin Link */}
-        <div className="border-t border-gray-200 pt-4 text-center">
+        <div className="border-t border-slate-100 pt-3 text-center">
           <a
             href="/admin/login"
-            className="text-xs text-gray-500 hover:text-gray-700 transition font-medium"
+            className="text-[11px] text-slate-500 hover:text-slate-800 transition font-medium"
           >
             Admin Portal →
           </a>

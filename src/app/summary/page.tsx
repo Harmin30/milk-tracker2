@@ -150,52 +150,50 @@ export default function Summary() {
     : "";
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-24">
-      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
+    <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
+      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
         {/* Page Title */}
-
         <div>
-          <h1 className="text-2xl font-semibold">Monthly Summary</h1>
-          <p className="text-sm text-gray-500">
-            View milk production and earnings for a specific month
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Monthly Summary</h1>
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            View milk production and total earnings for a specific month
           </p>
         </div>
 
         {message && (
           <div
-            className={`p-4 rounded-xl border-2 flex items-center gap-3 text-sm font-medium transition-all duration-300 ${
+            className={`p-3.5 px-5 rounded-2xl border flex items-center gap-3 text-xs font-semibold transition-all duration-300 shadow-lg ${
               messageType === "success"
-                ? "bg-green-50 border-green-300 text-green-700"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-900"
                 : messageType === "error"
-                  ? "bg-red-50 border-red-300 text-red-700"
-                  : "bg-yellow-50 border-yellow-300 text-yellow-700"
+                  ? "bg-rose-50 border-rose-200 text-rose-700"
+                  : "bg-amber-50 border-amber-200 text-amber-800"
             }`}
           >
             {messageType === "success" && (
-              <i className="fa-solid fa-circle-check text-lg flex-shrink-0"></i>
+              <i className="fa-solid fa-circle-check text-emerald-500 text-sm flex-shrink-0"></i>
             )}
             {messageType === "error" && (
-              <i className="fa-solid fa-circle-xmark text-lg flex-shrink-0"></i>
+              <i className="fa-solid fa-circle-xmark text-rose-500 text-sm flex-shrink-0"></i>
             )}
             {messageType === "warning" && (
-              <i className="fa-solid fa-triangle-exclamation text-lg flex-shrink-0"></i>
+              <i className="fa-solid fa-triangle-exclamation text-amber-500 text-sm flex-shrink-0"></i>
             )}
             <span>{message}</span>
           </div>
         )}
 
         {/* Month Picker */}
-
-        <div className="bg-white rounded-2xl shadow-md p-4 space-y-3 border border-gray-100">
-          <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-            <i className="fa-solid fa-calendar text-blue-600"></i>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 space-y-3">
+          <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+            <i className="fa-solid fa-calendar text-indigo-600 text-xs"></i>
             Select Month
           </label>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Month selector */}
             <div className="relative flex-1 min-w-[170px]">
-              <i className="fa-solid fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <i className="fa-solid fa-calendar-days absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
 
               <input
                 type="month"
@@ -206,7 +204,7 @@ export default function Summary() {
                   setData(null);
                   setSearched(false);
                 }}
-                className="w-full border-2 border-gray-200 rounded-lg pl-11 pr-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm"
+                className="w-full border border-slate-200 rounded-xl pl-9 pr-3.5 py-2.5 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition text-xs font-medium"
               />
             </div>
 
@@ -218,7 +216,7 @@ export default function Summary() {
                   setData(null);
                   setSearched(false);
                 }}
-                className="flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition"
+                className="flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 transition"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
@@ -227,172 +225,194 @@ export default function Summary() {
 
           <button
             onClick={fetchSummary}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center gap-2"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold shadow-xs transition flex items-center justify-center gap-1.5 text-xs"
           >
-            <i className="fa-solid fa-magnifying-glass"></i>
-            Get Summary
+            <i className="fa-solid fa-magnifying-glass text-xs"></i>
+            <span>Get Summary</span>
           </button>
         </div>
 
         {/* Loading */}
-
         {loading && (
-          <p className="text-gray-500 text-sm text-center">
-            Loading summary...
+          <p className="text-slate-500 text-xs font-medium text-center py-4">
+            Loading monthly summary...
           </p>
         )}
 
         {/* Empty State */}
-
         {!loading && !data && searched && (
-          <div className="bg-white p-6 rounded-xl text-center shadow-sm">
-            <p className="text-gray-500">No data available for this month</p>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 text-center shadow-xs">
+            <p className="text-slate-500 text-xs font-medium">No data available for this month</p>
           </div>
         )}
 
         {/* Summary Card */}
-
         {data && (
-          <div className="bg-white rounded-2xl shadow-md p-6 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
             {/* Month Header */}
-
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
               <div>
-                <p className="text-gray-500 text-sm">Summary For</p>
-                <p className="text-lg font-semibold">
+                <p className="text-[11px] text-slate-500 font-medium">Summary For</p>
+                <p className="text-base font-bold text-slate-900">
                   {formatMonth(selectedMonth)}
                 </p>
               </div>
 
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="text-red-600 border border-red-500 px-3 py-1 rounded-lg text-sm"
+                className="text-rose-600 border border-rose-200 hover:bg-rose-50 px-3 py-1 rounded-xl text-xs font-semibold transition"
               >
                 Delete Month
               </button>
             </div>
 
             {/* Cow */}
-
-            <div className="flex justify-between items-center border-b pb-3">
+            <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/70 border border-slate-100">
               <div>
-                <p className="text-sm text-gray-500">🐄 Cow Milk</p>
-
-                <div>
-                  <p className="font-semibold">{data.cow_liters} L</p>
-                  <p className="text-xs text-gray-400">
-                    ₹ {Number(data.cow_rate).toFixed(2)} / L{" "}
-                    {data.cow_rate_changed && (
-                      <span className="text-[10px] text-orange-500 font-medium">
-                        (Avg)
-                      </span>
-                    )}
-                  </p>
-                </div>
+                <p className="text-xs font-semibold text-slate-900">🐄 Cow Milk</p>
+                <p className="text-xs font-bold text-slate-800 mt-0.5">{data.cow_liters} L</p>
+                <p className="text-[10px] text-slate-500">
+                  ₹{Number(data.cow_rate).toFixed(2)} / L{" "}
+                  {data.cow_rate_changed && (
+                    <span className="text-[10px] text-amber-600 font-semibold">
+                      (Avg)
+                    </span>
+                  )}
+                </p>
               </div>
 
-              <p className="text-green-600 font-medium">₹ {data.cow_amount}</p>
+              <p className="text-emerald-600 font-bold text-sm">₹{data.cow_amount}</p>
             </div>
 
             {/* Buffalo */}
-
-            <div className="flex justify-between items-center border-b pb-3">
+            <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/70 border border-slate-100">
               <div>
-                <p className="text-sm text-gray-500">🐃 Buffalo Milk</p>
-
-                <div>
-                  <p className="font-semibold">{data.buffalo_liters} L</p>
-                  <p className="text-xs text-gray-400">
-                    ₹ {Number(data.buffalo_rate).toFixed(2)} / L{" "}
-                    {data.buffalo_rate_changed && (
-                      <span className="text-[10px] text-orange-500 font-medium">
-                        (Avg)
-                      </span>
-                    )}
-                  </p>
-                </div>
+                <p className="text-xs font-semibold text-slate-900">🐃 Buffalo Milk</p>
+                <p className="text-xs font-bold text-slate-800 mt-0.5">{data.buffalo_liters} L</p>
+                <p className="text-[10px] text-slate-500">
+                  ₹{Number(data.buffalo_rate).toFixed(2)} / L{" "}
+                  {data.buffalo_rate_changed && (
+                    <span className="text-[10px] text-amber-600 font-semibold">
+                      (Avg)
+                    </span>
+                  )}
+                </p>
               </div>
 
-              <p className="text-green-600 font-medium">
-                ₹ {data.buffalo_amount}
+              <p className="text-emerald-600 font-bold text-sm">
+                ₹{data.buffalo_amount}
               </p>
             </div>
 
             {/* Packaged Milk - Show only if bought */}
             {data.packaged_liters > 0 && (
-              <div className="flex justify-between items-center border-b pb-3">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/70 border border-slate-100">
                 <div>
-                  <p className="text-sm text-gray-500">🥛 {brandMilkName}</p>
-
-                  <div>
-                    <p className="font-semibold">{data.packaged_liters} L</p>
-                    <p className="text-xs text-gray-400">
-                      ₹ {Number(data.packaged_rate).toFixed(2)} / L{" "}
-                      {data.packaged_rate_changed && (
-                        <span className="text-[10px] text-orange-500 font-medium">
-                          (Avg)
-                        </span>
-                      )}
-                    </p>
-                  </div>
+                  <p className="text-xs font-semibold text-slate-900">🥛 {brandMilkName}</p>
+                  <p className="text-xs font-bold text-slate-800 mt-0.5">{data.packaged_liters} L</p>
+                  <p className="text-[10px] text-slate-500">
+                    ₹{Number(data.packaged_rate).toFixed(2)} / L{" "}
+                    {data.packaged_rate_changed && (
+                      <span className="text-[10px] text-amber-600 font-semibold">
+                        (Avg)
+                      </span>
+                    )}
+                  </p>
                 </div>
 
-                <p className="text-green-600 font-medium">
-                  ₹ {data.packaged_amount}
+                <p className="text-emerald-600 font-bold text-sm">
+                  ₹{data.packaged_amount}
                 </p>
+              </div>
+            )}
+            {/* Volume Distribution Ratio Bar */}
+            {data.total_liters > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex justify-between items-center text-[10px] font-semibold text-slate-500">
+                  <span>Volume Distribution</span>
+                  <span>{data.total_liters}L Total</span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden bg-slate-100 flex">
+                  {data.cow_liters > 0 && (
+                    <div
+                      className="bg-emerald-500 h-full transition-all"
+                      style={{
+                        width: `${(data.cow_liters / data.total_liters) * 100}%`,
+                      }}
+                      title={`Cow: ${data.cow_liters}L`}
+                    />
+                  )}
+                  {data.buffalo_liters > 0 && (
+                    <div
+                      className="bg-blue-600 h-full transition-all"
+                      style={{
+                        width: `${(data.buffalo_liters / data.total_liters) * 100}%`,
+                      }}
+                      title={`Buffalo: ${data.buffalo_liters}L`}
+                    />
+                  )}
+                  {data.packaged_liters > 0 && (
+                    <div
+                      className="bg-amber-500 h-full transition-all"
+                      style={{
+                        width: `${(data.packaged_liters / data.total_liters) * 100}%`,
+                      }}
+                      title={`Packaged: ${data.packaged_liters}L`}
+                    />
+                  )}
+                </div>
               </div>
             )}
 
             {/* Total */}
-
-            <div className="flex justify-between items-center pt-2">
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <div>
-                <p className="text-sm text-gray-500">Total Litres</p>
-                <p className="text-xl font-semibold">{data.total_liters} L</p>
+                <p className="text-[11px] text-slate-500 font-medium">Total Volume</p>
+                <p className="text-lg font-bold text-slate-900">{data.total_liters} L</p>
               </div>
 
-              <p className="text-xl font-semibold text-blue-600">
-                ₹ {data.total_amount}
-              </p>
+              <div className="text-right">
+                <p className="text-[11px] text-slate-500 font-medium">Total Amount</p>
+                <p className="text-lg font-bold text-emerald-600">
+                  ₹{data.total_amount}
+                </p>
+              </div>
             </div>
           </div>
         )}
       </div>
 
       {/* DELETE MODAL */}
-
       {showDeleteModal &&
         mounted &&
         createPortal(
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-80 text-center space-y-5 shadow-xl">
-              <div className="flex justify-center">
-                <div className="bg-red-100 p-3 rounded-full">
-                  <i className="fa-solid fa-trash text-red-600 text-2xl"></i>
-                </div>
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-xl border border-slate-200">
+              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl">
+                <i className="fa-solid fa-trash"></i>
               </div>
 
               <div>
-                <h2 className="text-lg font-bold text-gray-800">
+                <h2 className="text-base font-bold text-slate-900">
                   Delete {monthLabel}?
                 </h2>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
                   This will delete all milk entries and bills for {monthLabel}.
                   This action cannot be undone.
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 border-2 border-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
+                  className="flex-1 border border-slate-300 text-slate-700 py-2 rounded-xl text-xs font-semibold hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={deleteMonthData}
-                  className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition"
+                  className="flex-1 bg-rose-600 text-white py-2 rounded-xl text-xs font-semibold hover:bg-rose-700 transition shadow-xs"
                 >
                   Delete
                 </button>

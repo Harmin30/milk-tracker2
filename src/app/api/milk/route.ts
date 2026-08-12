@@ -166,8 +166,8 @@ export async function GET(req: Request) {
 
     const offset = (page - 1) * limit;
 
-    let conditions = ["user_id = $1"];
-    let values: unknown[] = [user.userId];
+    const conditions = ["user_id = $1"];
+    const values: unknown[] = [user.userId];
 
     /* DATE SEARCH */
 

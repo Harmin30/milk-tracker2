@@ -84,38 +84,40 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-gray-50 px-4 py-8">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50/80 px-4 py-8 text-slate-900">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-lg p-6 sm:p-8 space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl">
-              <i className="fa-solid fa-user-plus text-xl"></i>
+        <div className="text-center space-y-1.5">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-xs">
+              <i className="fa-solid fa-user-plus text-lg"></i>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-gray-500 text-sm">
-            Start tracking your milk records today
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Create Account</h1>
+          <p className="text-xs text-slate-500 font-medium">
+            Start tracking your daily milk records
           </p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg flex items-center gap-2">
-            <i className="fa-solid fa-circle-exclamation"></i>
-            {error}
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl flex items-center gap-2 font-medium">
+            <i className="fa-solid fa-circle-exclamation text-rose-500"></i>
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Success Message with Animation */}
+        {/* Success Message */}
         {success && (
-          <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 text-green-700 p-4 rounded-xl flex items-start gap-3 shadow-lg animate-pulse">
-            <div className="text-2xl flex-shrink-0">✅</div>
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl flex items-start gap-3 shadow-xs">
+            <div className="text-base flex-shrink-0 text-emerald-600">
+              <i className="fa-solid fa-circle-check"></i>
+            </div>
             <div className="flex-1">
-              <p className="font-semibold text-sm">
+              <p className="font-bold text-xs">
                 Account Created Successfully!
               </p>
-              <p className="text-xs text-green-600 mt-1">
+              <p className="text-[11px] text-emerald-700 mt-0.5">
                 Redirecting to login page...
               </p>
             </div>
@@ -124,23 +126,23 @@ export default function Register() {
 
         <form
           onSubmit={handleRegister}
-          className={`space-y-4 ${success ? "opacity-50 pointer-events-none" : ""}`}
+          className={`space-y-3.5 ${success ? "opacity-50 pointer-events-none" : ""}`}
         >
           {/* Email */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700">
               Email Address
             </label>
             <div className="relative">
-              <i className="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
               <input
                 type="email"
                 name="email"
                 placeholder="you@example.com"
-                className={`w-full border-2 rounded-lg pl-11 pr-4 py-3 text-sm focus:outline-none transition ${
+                className={`w-full border rounded-xl pl-9 pr-3.5 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                   fieldErrors.email
-                    ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                    : "border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 }`}
                 value={email}
                 onChange={(e) => {
@@ -151,28 +153,28 @@ export default function Register() {
               />
             </div>
             {fieldErrors.email && (
-              <p className="text-red-500 text-xs flex items-center gap-1">
-                <i className="fa-solid fa-exclamation-circle text-xs"></i>
+              <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                 {fieldErrors.email}
               </p>
             )}
           </div>
 
           {/* Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700">
               Password
             </label>
             <div className="relative">
-              <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <i className="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Create a password"
-                className={`w-full border-2 rounded-lg pl-11 pr-11 py-3 text-sm focus:outline-none transition ${
+                className={`w-full border rounded-xl pl-9 pr-10 py-2.5 text-xs bg-slate-50/50 focus:bg-white focus:outline-none transition ${
                   fieldErrors.password
-                    ? "border-red-300 focus:ring-2 focus:ring-red-500"
-                    : "border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    ? "border-rose-300 focus:ring-2 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 }`}
                 value={password}
                 onChange={(e) => {
@@ -184,15 +186,15 @@ export default function Register() {
               <i
                 className={`fa-solid ${
                   showPassword ? "fa-eye-slash" : "fa-eye"
-                } absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition`}
+                } absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-slate-600 text-xs transition`}
                 onClick={() =>
                   !loading && !success && setShowPassword(!showPassword)
                 }
               ></i>
             </div>
             {fieldErrors.password && (
-              <p className="text-red-500 text-xs flex items-center gap-1">
-                <i className="fa-solid fa-exclamation-circle text-xs"></i>
+              <p className="text-rose-600 text-[11px] font-medium flex items-center gap-1">
+                <i className="fa-solid fa-exclamation-circle text-[10px]"></i>
                 {fieldErrors.password}
               </p>
             )}
@@ -202,16 +204,16 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading || success}
-            className={`w-full py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2 mt-6 ${
+            className={`w-full py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center space-x-2 shadow-xs mt-4 ${
               loading || success
-                ? "bg-green-400 cursor-not-allowed opacity-75"
-                : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-            } text-white`}
+                ? "bg-emerald-400 cursor-not-allowed opacity-75 text-white"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+            }`}
           >
             {loading ? (
               <>
                 <svg
-                  className="w-5 h-5 animate-spin"
+                  className="w-4 h-4 animate-spin text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -234,12 +236,12 @@ export default function Register() {
               </>
             ) : success ? (
               <>
-                <i className="fa-solid fa-check-circle"></i>
+                <i className="fa-solid fa-check-circle text-xs"></i>
                 <span>Account Created!</span>
               </>
             ) : (
               <>
-                <i className="fa-solid fa-check-circle"></i>
+                <i className="fa-solid fa-check-circle text-xs"></i>
                 <span>Create Account</span>
               </>
             )}
@@ -247,20 +249,20 @@ export default function Register() {
         </form>
 
         {/* Divider */}
-        <div className="relative">
+        <div className="relative pt-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-slate-200"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-white text-slate-400 font-medium">
               Already registered?
             </span>
           </div>
         </div>
 
         {/* Login Link */}
-        <a href="/login">
-          <button className="w-full border-2 border-gray-300 bg-white hover:bg-green-50 hover:border-green-500 py-3 rounded-lg text-green-600 font-semibold transition shadow-md">
+        <a href="/login" className="block">
+          <button className="w-full border border-slate-200 bg-slate-50/80 hover:bg-slate-100 py-2.5 rounded-xl text-slate-700 font-semibold text-xs transition">
             Login to Account
           </button>
         </a>

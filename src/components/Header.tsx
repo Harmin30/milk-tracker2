@@ -55,69 +55,75 @@ export default function Header() {
   const initial = name ? name.charAt(0).toUpperCase() : "U";
 
   return (
-    <header className="w-full sticky top-0 z-40 border-b border-gray-200 bg-white/40 backdrop-blur-xl shadow-sm">
-      <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+    <header className="w-full sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-md shadow-xs">
+      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center border border-blue-400 shadow-sm hover:shadow-md transition">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition text-left"
+        >
+          <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
             <i className="fa-solid fa-glass-water text-sm"></i>
           </div>
 
-          <span className="font-bold text-gray-800 text-lg tracking-tight">
+          <span className="font-bold text-slate-900 text-lg tracking-tight">
             Milk Tracker
           </span>
-        </div>
+        </button>
 
         {/* Profile */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-3 hover:opacity-75 transition"
+            className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-100/80 transition"
           >
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-md transition hover:shadow-lg hover:scale-110">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs border border-indigo-200/50">
               {initial}
             </div>
 
             {/* Arrow */}
             <i
-              className={`fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-200 ${
+              className={`fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 pr-1 ${
                 menuOpen ? "rotate-180" : ""
               }`}
             ></i>
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200/90 rounded-2xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
               {/* User Info */}
-              <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <p className="text-sm font-bold text-gray-800">
+              <div className="px-4 py-3.5 border-b border-slate-100 bg-slate-50/70">
+                <p className="text-sm font-semibold text-slate-900 truncate">
                   {name || "User"}
                 </p>
 
-                <p className="text-xs text-gray-500 mt-0.5">Account Settings</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Account & Settings</p>
               </div>
 
-              {/* Profile */}
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push("/profile");
-                }}
-                className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 transition border-b border-gray-100"
-              >
-                <i className="fa-solid fa-user text-blue-500 w-5 text-center"></i>
-                <span>Profile Settings</span>
-              </button>
+              <div className="p-1">
+                {/* Profile */}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/profile");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-100/80 rounded-xl transition"
+                >
+                  <i className="fa-solid fa-user text-indigo-600 w-4 text-center"></i>
+                  <span>Profile Settings</span>
+                </button>
 
-              {/* Logout */}
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition"
-              >
-                <i className="fa-solid fa-right-from-bracket text-red-500 w-5 text-center"></i>
-                <span>Logout</span>
-              </button>
+                {/* Logout */}
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                >
+                  <i className="fa-solid fa-right-from-bracket text-rose-500 w-4 text-center"></i>
+                  <span>Logout</span>
+                </button>
+              </div>
             </div>
           )}
         </div>

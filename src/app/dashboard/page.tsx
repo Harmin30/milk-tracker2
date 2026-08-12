@@ -153,7 +153,7 @@ export default function Dashboard() {
   const totalMilk = cowLiters + buffaloLiters;
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-24">
+    <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
       {/* Welcome Toast */}
       <AnimatePresence>
         {showWelcome && (
@@ -161,269 +161,274 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.5 }}
-            className="fixed top-8 left-0 right-0 flex justify-center z-50 pointer-events-none"
+            transition={{ duration: 0.4 }}
+            className="fixed top-6 left-0 right-0 flex justify-center z-50 pointer-events-none px-4"
           >
-            <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-4 rounded-lg shadow-xl flex items-center space-x-3 pointer-events-auto">
-              <i className="fa-solid fa-check-circle text-lg"></i>
-              <div>
-                <p className="font-medium">Welcome back, {welcomeName}! 👋</p>
-              </div>
+            <div className="bg-emerald-50 text-emerald-900 px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-3 pointer-events-auto border border-emerald-200 text-sm font-semibold">
+              <i className="fa-solid fa-circle-check text-emerald-500 text-base"></i>
+              <p className="font-medium">Welcome back, {welcomeName}! 👋</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-gray-100 pb-24">
-        <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-5 space-y-5">
-          {/* Page Title */}
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
-            <p className="text-sm text-gray-500">
-              Overview of your milk records
-            </p>
+      <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+        {/* Page Title */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Dashboard
+          </h1>
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            Overview of your daily milk records
+          </p>
+        </div>
+
+        {/* Daily Reminder */}
+        {showReminder && hasTodayEntry === false && (
+          <div className="bg-amber-50/90 border border-amber-200/80 p-3.5 rounded-2xl shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-amber-100/90 text-amber-700 flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+                  📝
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-900 truncate">
+                    Don&apos;t forget to log today&apos;s milk!
+                  </p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    You haven&apos;t added any entries yet today
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  localStorage.setItem("reminder_dismissed_date", today);
+                  setShowReminder(false);
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1 transition flex-shrink-0"
+              >
+                <i className="fa-solid fa-xmark text-sm"></i>
+              </button>
+            </div>
+            <button
+              onClick={() => router.push("/entries")}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <i className="fa-solid fa-plus text-[11px]"></i>
+              <span>Add Entry</span>
+            </button>
+          </div>
+        )}
+
+        {/* Today's Summary Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-3.5">
+          <div className="flex items-center justify-between pb-1">
+            <div>
+              <h2 className="font-bold text-slate-900 text-sm tracking-tight">
+                Today&apos;s Status
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium">
+                {new Date().toLocaleDateString("en-IN", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-xl transition-colors ${
+                hasTodayEntry
+                  ? "bg-emerald-50 text-emerald-600 border border-emerald-200/60"
+                  : "bg-slate-100 text-slate-400"
+              }`}
+            >
+              <i
+                className={`fa-solid text-sm ${
+                  hasTodayEntry ? "fa-check-circle" : "fa-circle"
+                }`}
+              ></i>
+            </div>
           </div>
 
-          {/* Daily Reminder */}
-          {showReminder && hasTodayEntry === false && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-2.5 rounded-lg shadow-sm mt-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="text-lg">📝</div>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-800">
-                      Don&apos;t forget to log today&apos;s milk!
-                    </p>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      You haven&apos;t added any entries yet today
+          {hasTodayEntry ? (
+            <div className="space-y-2">
+              {todayEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className={`flex items-center justify-between p-3 rounded-xl border transition ${
+                    entry.milk_type === "cow"
+                      ? "bg-emerald-50/50 border-emerald-100"
+                      : entry.milk_type === "buffalo"
+                        ? "bg-blue-50/50 border-blue-100"
+                        : "bg-amber-50/50 border-amber-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <span className="text-base flex-shrink-0">
+                      {entry.milk_type === "cow"
+                        ? "🐄"
+                        : entry.milk_type === "buffalo"
+                          ? "🐃"
+                          : "🥛"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-800 capitalize">
+                        {entry.milk_type === "cow"
+                          ? "Cow Milk"
+                          : entry.milk_type === "buffalo"
+                            ? "Buffalo Milk"
+                            : "Packaged Milk"}
+                      </p>
+                      <p className="text-[11px] font-medium text-slate-500">
+                        {Number(entry.liters)} L
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-xs font-bold text-emerald-700">
+                      ₹{Number(entry.total_amount)}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    const today = new Date().toISOString().split("T")[0];
-                    localStorage.setItem("reminder_dismissed_date", today);
-                    setShowReminder(false);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-lg flex-shrink-0"
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
+              ))}
+
+              <div className="border-t border-slate-100 pt-2.5 mt-2.5">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-medium text-slate-500">Total Today</span>
+                  <div className="text-right">
+                    <p className="text-base font-bold text-slate-900">
+                      {todayMilk} L
+                    </p>
+                    <p className="text-xs font-bold text-emerald-600">
+                      ₹{todayAmount}
+                    </p>
+                  </div>
+                </div>
               </div>
+            </div>
+          ) : (
+            <div className="py-4 text-center space-y-2">
+              <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-base">
+                <i className="fa-solid fa-droplet"></i>
+              </div>
+              <p className="text-slate-600 text-xs font-medium">
+                No entries logged yet today
+              </p>
               <button
                 onClick={() => router.push("/entries")}
-                className="mt-1.5 w-full bg-amber-500 text-white py-1 rounded-lg text-xs font-medium hover:bg-amber-600 transition flex items-center justify-center gap-2"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-xs inline-flex items-center gap-1.5"
               >
-                <i className="fa-solid fa-plus text-xs"></i>
-                Add Entry
+                <i className="fa-solid fa-plus text-[11px]"></i>
+                <span>Add Entry</span>
               </button>
             </div>
           )}
+        </div>
 
-          {/* Today's Summary Card */}
-          <div className="bg-white rounded-2xl shadow-md p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h2 className="font-semibold text-gray-800 text-sm">Today</h2>
-                <p className="text-xs text-gray-500">
-                  {new Date().toLocaleDateString("en-IN", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-
-              <div
-                className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
-                  hasTodayEntry
-                    ? "bg-green-100 text-green-600"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-              >
-                <i
-                  className={`fa-solid text-lg ${
-                    hasTodayEntry ? "fa-check-circle" : "fa-circle"
-                  }`}
-                ></i>
-              </div>
+        {/* Monthly Milk Summary */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-slate-900 text-sm tracking-tight">
+                Monthly Summary
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium">{monthLabel}</p>
             </div>
 
-            {hasTodayEntry ? (
-              <div className="space-y-1">
-                {todayEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-100 p-2.5 rounded-lg"
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-sm flex-shrink-0">
-                        {entry.milk_type === "cow" ? "🐄" : "🐃"}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-gray-800">
-                          {entry.milk_type === "cow" ? "Cow" : "Buffalo"}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          {Number(entry.liters)} L
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <p className="text-xs font-semibold text-green-700">
-                        ₹{Number(entry.total_amount)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="border-t border-gray-200 pt-1.5 mt-1.5">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-gray-600">Total</span>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-800">
-                        {todayMilk} L
-                      </p>
-                      <p className="text-xs font-semibold text-green-600">
-                        ₹{todayAmount}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="py-2 text-center">
-                <div className="text-gray-300 text-2xl mb-1">
-                  <i className="fa-solid fa-droplet"></i>
-                </div>
-                <p className="text-gray-600 text-xs mb-2">
-                  No entries logged yet
-                </p>
-                <button
-                  onClick={() => router.push("/entries")}
-                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition"
-                >
-                  <i className="fa-solid fa-plus mr-1"></i>
-                  Add Entry
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Monthly Milk Summary */}
-          <div className="bg-white rounded-2xl shadow-md p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="font-semibold text-gray-700">Monthly Summary</h2>
-                <p className="text-xs text-gray-500">{monthLabel}</p>
-              </div>
-
-              <div className="bg-gray-100 text-gray-600 p-2 rounded-lg">
-                <i className="fa-solid fa-chart-column"></i>
-              </div>
-            </div>
-
-            {/* Milk Stats */}
-            <div className="space-y-3 text-sm">
-              {/* Buffalo */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <div className="flex flex-col">
-                    <span className="flex items-center gap-2">
-                      <span className="text-lg">🐃</span>
-                      Buffalo Milk
-                    </span>
-
-                    <span className="text-xs text-gray-500">
-                      ₹{buffaloPrice}/L
-                    </span>
-                  </div>
-                </div>
-
-                <span className="font-semibold">
-                  {loading ? "..." : `${buffaloLiters} L`}
-                </span>
-              </div>
-
-              {/* Cow */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <div className="flex flex-col">
-                    <span className="flex items-center gap-2">
-                      <span className="text-lg">🐄</span>
-                      Cow Milk
-                    </span>
-
-                    <span className="text-xs text-gray-500">₹{cowPrice}/L</span>
-                  </div>
-                </div>
-
-                <span className="font-semibold">
-                  {loading ? "..." : `${cowLiters} L`}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t pt-3 mt-3"></div>
-
-              {/* Total Milk */}
-              <div className="flex justify-between">
-                <span className="text-gray-600">Total Milk</span>
-
-                <span className="font-semibold">
-                  {loading ? "..." : `${totalMilk} L`}
-                </span>
-              </div>
-
-              {/* Total Amount */}
-              <div className="flex justify-between">
-                <span className="text-gray-600">Total Amount</span>
-
-                <span className="font-semibold text-green-600">
-                  {loading ? "..." : `₹${totalAmount}`}
-                </span>
-              </div>
+            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
+              <i className="fa-solid fa-chart-column"></i>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-sm font-semibold mb-3 text-gray-800">
-              Quick Actions
-            </h2>
-
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => router.push("/entries")}
-                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
-              >
-                <div className="text-blue-600 text-lg mb-2">
-                  <i className="fa-solid fa-plus"></i>
+          {/* Milk Stats */}
+          <div className="space-y-3 text-xs">
+            {/* Buffalo */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+              <div className="flex items-center gap-2.5 text-slate-700">
+                <span className="text-base">🐃</span>
+                <div>
+                  <p className="font-semibold text-slate-900">Buffalo Milk</p>
+                  <p className="text-[10px] text-slate-500">₹{buffaloPrice}/L</p>
                 </div>
-                <p className="text-xs font-medium text-gray-800">Add Entry</p>
-              </button>
+              </div>
 
-              <button
-                onClick={() => router.push("/records")}
-                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
-              >
-                <div className="text-green-600 text-lg mb-2">
-                  <i className="fa-solid fa-list"></i>
-                </div>
-                <p className="text-xs font-medium text-gray-800">Records</p>
-              </button>
-
-              <button
-                onClick={() => router.push("/bills")}
-                className="bg-white shadow-sm hover:shadow-md rounded-xl p-3 text-center transition"
-              >
-                <div className="text-orange-600 text-lg mb-2">
-                  <i className="fa-solid fa-file-invoice"></i>
-                </div>
-                <p className="text-xs font-medium text-gray-800">Bills</p>
-              </button>
+              <span className="font-bold text-slate-900">
+                {loading ? "..." : `${buffaloLiters} L`}
+              </span>
             </div>
+
+            {/* Cow */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+              <div className="flex items-center gap-2.5 text-slate-700">
+                <span className="text-base">🐄</span>
+                <div>
+                  <p className="font-semibold text-slate-900">Cow Milk</p>
+                  <p className="text-[10px] text-slate-500">₹{cowPrice}/L</p>
+                </div>
+              </div>
+
+              <span className="font-bold text-slate-900">
+                {loading ? "..." : `${cowLiters} L`}
+              </span>
+            </div>
+
+            {/* Total Milk */}
+            <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
+              <span className="text-slate-600 font-medium">Total Volume</span>
+              <span className="font-bold text-slate-900 text-sm">
+                {loading ? "..." : `${totalMilk} L`}
+              </span>
+            </div>
+
+            {/* Total Amount */}
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 font-medium">Total Amount</span>
+              <span className="font-bold text-emerald-600 text-base">
+                {loading ? "..." : `₹${totalAmount}`}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
+            Quick Actions
+          </h2>
+
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              onClick={() => router.push("/entries")}
+              className="bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md rounded-2xl p-3.5 text-center transition flex flex-col items-center justify-center gap-1.5"
+            >
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                <i className="fa-solid fa-plus"></i>
+              </div>
+              <p className="text-xs font-semibold text-slate-800">Add Entry</p>
+            </button>
+
+            <button
+              onClick={() => router.push("/records")}
+              className="bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md rounded-2xl p-3.5 text-center transition flex flex-col items-center justify-center gap-1.5"
+            >
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                <i className="fa-solid fa-list"></i>
+              </div>
+              <p className="text-xs font-semibold text-slate-800">Records</p>
+            </button>
+
+            <button
+              onClick={() => router.push("/bills")}
+              className="bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md rounded-2xl p-3.5 text-center transition flex flex-col items-center justify-center gap-1.5"
+            >
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                <i className="fa-solid fa-file-invoice"></i>
+              </div>
+              <p className="text-xs font-semibold text-slate-800">Bills</p>
+            </button>
           </div>
         </div>
       </div>
