@@ -2,33 +2,12 @@ export const runtime = "nodejs";
 
 import { pool } from "../../../lib/db";
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-
-function getUserFromToken(req: Request) {
-  const cookieHeader = req.headers.get("cookie");
-  if (!cookieHeader) return null;
-
-  const token = cookieHeader
-    .split("; ")
-    .find((row) => row.startsWith("token="))
-    ?.split("=")[1];
-
-  if (!token) return null;
-
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET as string) as {
-      userId: string;
-      email: string;
-    };
-  } catch {
-    return null;
-  }
-}
+import { getUserFromRequest } from "../../../lib/auth";
 
 // 🥛 ADD MILK ENTRY
 export async function POST(req: Request) {
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromRequest(req);
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -149,7 +128,7 @@ export async function POST(req: Request) {
 // 📄 GET USER MILK ENTRIES (WITH PAGINATION)
 export async function GET(req: Request) {
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromRequest(req);
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

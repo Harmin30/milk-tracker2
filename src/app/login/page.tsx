@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState(true);
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [inactivityNotice, setInactivityNotice] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string;
     password?: string;
@@ -19,14 +20,51 @@ export default function Login() {
 
   const [autoFilled, setAutoFilled] = useState(false);
 
+  // Check for existing session or inactivity redirect
+  useEffect(() => {
+    let isMounted = true;
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("reason") === "inactivity") {
+        setInactivityNotice(true);
+      }
+    }
+
+    async function checkExistingSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.authenticated) {
+            router.replace("/dashboard");
+          }
+        }
+      } catch {
+        // Ignore offline / network error on login screen
+      }
+    }
+
+    checkExistingSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
   // Load saved email and remember preference on mount
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
-    const savedRemember = localStorage.getItem("rememberMe") === "true";
+    const savedRemember = localStorage.getItem("rememberMe");
 
-    if (savedEmail && savedRemember) {
+    if (savedRemember !== null) {
+      setRemember(savedRemember === "true");
+    } else {
+      setRemember(true); // Remember Me by Default
+    }
+
+    if (savedEmail) {
       setEmail(savedEmail);
-      setRemember(true);
       setAutoFilled(true);
     }
   }, []);
@@ -122,6 +160,14 @@ export default function Login() {
             Sign in to manage your daily milk records
           </p>
         </div>
+
+        {/* Inactivity Notice */}
+        {inactivityNotice && !error && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl flex items-center gap-2 font-medium">
+            <i className="fa-solid fa-clock-rotate-left text-amber-600"></i>
+            <span>Your session expired after 14 days of inactivity. Please log in again.</span>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (

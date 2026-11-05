@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { pool } from "../../../../lib/db";
 import { NextResponse } from "next/server";
 import { verifyAdminAccess } from "../../../../lib/adminAuth";
+import { revokeAllUserSessions } from "../../../../lib/auth";
 
 export async function GET(req: Request) {
   try {
@@ -52,6 +53,10 @@ export async function PUT(req: Request) {
       userId,
     ]);
 
+    if (!is_active) {
+      await revokeAllUserSessions(userId);
+    }
+
     return NextResponse.json({
       message: `User ${is_active ? "activated" : "deactivated"} successfully`,
     });
@@ -76,6 +81,9 @@ export async function DELETE(req: Request) {
         { status: 400 },
       );
     }
+
+    // Delete user's sessions first
+    await revokeAllUserSessions(userId);
 
     // Delete user's milk entries first
     await pool.query("DELETE FROM milk_entries WHERE user_id = $1", [userId]);

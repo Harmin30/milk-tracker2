@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { warmupSuccessChime, playSuccessChime } from "../../lib/sound";
 
 function EntriesPage() {
   const today = new Date().toISOString().split("T")[0];
@@ -216,8 +217,16 @@ function EntriesPage() {
 
   const total = (Number(liters) || 0) * (Number(price) || 0);
 
+  // Preload audio asset on mount
+  useEffect(() => {
+    warmupSuccessChime();
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Warm up audio context on user gesture so mobile Safari allows playback
+    warmupSuccessChime();
 
     setLoading(true);
     setMessage("");
@@ -292,7 +301,8 @@ function EntriesPage() {
         return;
       }
 
-      // Successful submission — trigger polished confirmation micro-interaction
+      // Successful submission — play gentle two-note success chime & trigger confirmation animation
+      playSuccessChime();
       setShowSuccess(true);
       setLoading(false);
 

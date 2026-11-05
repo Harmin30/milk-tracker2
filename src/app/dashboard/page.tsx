@@ -18,8 +18,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [cowPrice, setCowPrice] = useState(0);
   const [buffaloPrice, setBuffaloPrice] = useState(0);
+  const [brandMilkName, setBrandMilkName] = useState("Packaged Milk");
+  const [brandMilkPrice, setBrandMilkPrice] = useState(0);
   const [cowLiters, setCowLiters] = useState(0);
   const [buffaloLiters, setBuffaloLiters] = useState(0);
+  const [packagedLiters, setPackagedLiters] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [welcomeName, setWelcomeName] = useState("");
   const [showWelcome, setShowWelcome] = useState(false);
@@ -46,6 +49,7 @@ export default function Dashboard() {
 
         let cow = 0;
         let buffalo = 0;
+        let packaged = 0;
         let amount = 0;
         let todayMilkSum = 0;
         let todayAmountSum = 0;
@@ -67,8 +71,13 @@ export default function Dashboard() {
             .split("T")[0];
 
           if (d.getMonth() === month && d.getFullYear() === year) {
-            if (e.milk_type === "cow") cow += Number(e.liters);
-            else buffalo += Number(e.liters);
+            if (e.milk_type === "cow") {
+              cow += Number(e.liters);
+            } else if (e.milk_type === "buffalo") {
+              buffalo += Number(e.liters);
+            } else if (e.milk_type === "packaged") {
+              packaged += Number(e.liters);
+            }
 
             amount += Number(e.total_amount);
           }
@@ -81,12 +90,13 @@ export default function Dashboard() {
           }
         });
 
-        setCowLiters(cow);
-        setBuffaloLiters(buffalo);
-        setTotalAmount(amount);
+        setCowLiters(Math.round(cow * 100) / 100);
+        setBuffaloLiters(Math.round(buffalo * 100) / 100);
+        setPackagedLiters(Math.round(packaged * 100) / 100);
+        setTotalAmount(Math.round(amount * 100) / 100);
         setTodayEntries(todaysEntries);
-        setTodayMilk(todayMilkSum);
-        setTodayAmount(todayAmountSum);
+        setTodayMilk(Math.round(todayMilkSum * 100) / 100);
+        setTodayAmount(Math.round(todayAmountSum * 100) / 100);
         setHasTodayEntry(todayHasEntry);
       }
     } catch (err) {
@@ -104,6 +114,8 @@ export default function Dashboard() {
       if (res.ok && data.data) {
         setCowPrice(data.data.default_cow_price || 0);
         setBuffaloPrice(data.data.default_buffalo_price || 0);
+        setBrandMilkName(data.data.brand_milk_name || "Packaged Milk");
+        setBrandMilkPrice(data.data.default_brand_price || 0);
       }
     } catch (err) {
       console.log(err);
@@ -150,7 +162,7 @@ export default function Dashboard() {
     }
   }, [showWelcome]);
 
-  const totalMilk = cowLiters + buffaloLiters;
+  const totalMilk = Math.round((cowLiters + buffaloLiters + packagedLiters) * 100) / 100;
 
   return (
     <div className="min-h-screen bg-slate-50/70 pb-24 text-slate-900">
@@ -279,7 +291,7 @@ export default function Dashboard() {
                           ? "Cow Milk"
                           : entry.milk_type === "buffalo"
                             ? "Buffalo Milk"
-                            : "Packaged Milk"}
+                            : (brandMilkName || "Packaged Milk")}
                       </p>
                       <p className="text-[11px] font-medium text-slate-500">
                         {Number(entry.liters)} L
@@ -346,34 +358,62 @@ export default function Dashboard() {
           {/* Milk Stats */}
           <div className="space-y-3 text-xs">
             {/* Buffalo */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <span className="text-base">🐃</span>
-                <div>
-                  <p className="font-semibold text-slate-900">Buffalo Milk</p>
-                  <p className="text-[10px] text-slate-500">₹{buffaloPrice}/L</p>
+            {(buffaloLiters > 0 || totalMilk === 0) && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="text-base">🐃</span>
+                  <div>
+                    <p className="font-semibold text-slate-900">Buffalo Milk</p>
+                    <p className="text-[10px] text-slate-500">₹{buffaloPrice}/L</p>
+                  </div>
                 </div>
-              </div>
 
-              <span className="font-bold text-slate-900">
-                {loading ? "..." : `${buffaloLiters} L`}
-              </span>
-            </div>
+                <span className="font-bold text-slate-900">
+                  {loading ? "..." : `${buffaloLiters} L`}
+                </span>
+              </div>
+            )}
 
             {/* Cow */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <span className="text-base">🐄</span>
-                <div>
-                  <p className="font-semibold text-slate-900">Cow Milk</p>
-                  <p className="text-[10px] text-slate-500">₹{cowPrice}/L</p>
+            {(cowLiters > 0 || totalMilk === 0) && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="text-base">🐄</span>
+                  <div>
+                    <p className="font-semibold text-slate-900">Cow Milk</p>
+                    <p className="text-[10px] text-slate-500">₹{cowPrice}/L</p>
+                  </div>
                 </div>
-              </div>
 
-              <span className="font-bold text-slate-900">
-                {loading ? "..." : `${cowLiters} L`}
-              </span>
-            </div>
+                <span className="font-bold text-slate-900">
+                  {loading ? "..." : `${cowLiters} L`}
+                </span>
+              </div>
+            )}
+
+            {/* Packaged / Brand Milk */}
+            {(packagedLiters > 0 ||
+              (totalMilk === 0 &&
+                (Number(brandMilkPrice) > 0 ||
+                  (brandMilkName && brandMilkName !== "Packaged Milk")))) && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="text-base">🥛</span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      {brandMilkName || "Packaged Milk"}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      ₹{brandMilkPrice}/L
+                    </p>
+                  </div>
+                </div>
+
+                <span className="font-bold text-slate-900">
+                  {loading ? "..." : `${packagedLiters} L`}
+                </span>
+              </div>
+            )}
 
             {/* Total Milk */}
             <div className="border-t border-slate-100 pt-3 flex justify-between items-center">

@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { pool } from "../../../lib/db";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { createSession, setAuthCookies } from "../../../lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -46,10 +46,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1d" },
+    // Remember Me by Default with 14-day inactivity lifecycle
+    const shouldRemember = remember !== false;
+
+    // Create session in user_sessions table
+    const { session, accessToken, refreshToken } = await createSession(
+      user.id,
+      req,
     );
 
     const response = NextResponse.json({
@@ -57,19 +60,17 @@ export async function POST(req: Request) {
       user: {
         id: user.id,
         email: user.email,
+        name: user.name,
       },
+      sessionId: session.id,
     });
 
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: remember ? 60 * 60 * 24 * 30 : 60 * 60 * 2, // 30 days vs 2 hours
-    });
+    // Set secure HTTP-only cookies
+    setAuthCookies(response, accessToken, refreshToken, shouldRemember);
 
     return response;
   } catch (err) {
+    console.error("Login error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

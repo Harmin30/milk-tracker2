@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { clearClientSession } from "../lib/authClient";
 
 export default function Header() {
   const router = useRouter();
@@ -12,11 +13,16 @@ export default function Header() {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   async function logout() {
-    await fetch("/api/logout", {
-      method: "POST",
-    });
-
-    router.push("/login");
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+      });
+    } catch {
+      // Ignore
+    } finally {
+      clearClientSession();
+      router.push("/login");
+    }
   }
 
   // Load user profile

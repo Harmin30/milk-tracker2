@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { useRouter } from "next/navigation";
+import { clearClientSession } from "../../lib/authClient";
 
 export default function Profile() {
   const [name, setName] = useState("");
@@ -33,11 +33,16 @@ export default function Profile() {
   }, [message, messageType]);
 
   async function logout() {
-    await fetch("/api/logout", {
-      method: "POST",
-    });
-
-    router.push("/login");
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+      });
+    } catch {
+      // Ignore
+    } finally {
+      clearClientSession();
+      router.push("/login");
+    }
   }
 
   // Load profile
