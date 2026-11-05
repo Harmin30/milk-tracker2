@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { SummarySkeleton } from "../../components/ui/skeleton";
+
+// Module-level cache for instantaneous navigation between months
+const summaryCache = new Map<string, SummaryData>();
 
 type SummaryData = {
   cow_liters: number;
@@ -109,8 +113,15 @@ export default function Summary() {
     async function loadMonthlySummary() {
       if (!selectedMonth) return;
 
+      const cached = summaryCache.get(selectedMonth);
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
       const [year, month] = selectedMonth.split("-");
-      setLoading(true);
 
       try {
         const res = await fetch(
@@ -122,8 +133,9 @@ export default function Summary() {
 
         if (res.ok) {
           setData(result);
+          summaryCache.set(selectedMonth, result);
         } else {
-          setData(null);
+          if (!cached) setData(null);
           setMessage(result.error || "Failed to load summary");
           setMessageType("error");
         }
@@ -348,17 +360,7 @@ export default function Summary() {
         </div>
 
         {/* LOADING SKELETON */}
-        {loading && (
-          <div className="space-y-4 animate-pulse">
-            {/* Primary Stat Skeletons */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 h-24"></div>
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 h-24"></div>
-            </div>
-            {/* Breakdown Skeleton */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 h-44"></div>
-          </div>
-        )}
+        {loading && <SummarySkeleton />}
 
         {/* EMPTY STATE */}
         {!loading && !hasData && (

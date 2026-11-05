@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearClientSession } from "../../lib/authClient";
+import { ProfileSkeleton } from "../../components/ui/skeleton";
 
 export default function Profile() {
   const [name, setName] = useState("");
@@ -151,7 +152,7 @@ export default function Profile() {
           </p>
         </div>
 
-        {loading && <p className="text-slate-500 text-xs font-medium text-center py-4">Loading profile...</p>}
+        {loading && <ProfileSkeleton />}
 
         {!loading && (
           <>

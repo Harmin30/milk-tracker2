@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { BillsSkeleton } from "../../components/ui/skeleton";
 
 // Helper: Format YYYY-MM to readable month (e.g., "November 2026")
 function formatMonthValue(val: string): string {
@@ -843,11 +844,7 @@ export default function BillsPage() {
             </div>
           )}
 
-          {loading && (
-            <p className="text-slate-500 text-xs font-medium text-center py-6">
-              Loading bills...
-            </p>
-          )}
+          {loading && <BillsSkeleton />}
 
           {!loading && bills.length === 0 && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200/80 text-center shadow-xs space-y-2">

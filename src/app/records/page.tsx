@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { RecordsSkeleton } from "../../components/ui/skeleton";
 
 type MilkEntry = {
   id: string;
@@ -862,11 +863,7 @@ function RecordsContent() {
           )}
 
           {/* LOADING STATE */}
-          {loading && (
-            <p className="text-slate-500 text-xs font-medium text-center py-4">
-              Loading daily records...
-            </p>
-          )}
+          {loading && <RecordsSkeleton />}
 
           {/* DAILY RECORDS SECTION */}
           {!loading && (

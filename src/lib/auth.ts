@@ -122,6 +122,11 @@ export async function createSession(
   };
 }
 
+export function clearSessionValidationCache(sessionId?: string): void {
+  void sessionId;
+  // No-op: in-memory cache removed to ensure authoritative database validation
+}
+
 /**
  * Validates whether a session is active, not revoked, user is active,
  * and inactivity period has not exceeded 14 days.
@@ -357,6 +362,7 @@ export async function refreshSession(
  */
 export async function revokeSession(sessionId: string): Promise<boolean> {
   try {
+    clearSessionValidationCache(sessionId);
     await pool.query("UPDATE user_sessions SET is_revoked = TRUE WHERE id = $1", [sessionId]);
     return true;
   } catch (err) {
@@ -370,6 +376,7 @@ export async function revokeSession(sessionId: string): Promise<boolean> {
  */
 export async function revokeSessionByRefreshToken(refreshToken: string): Promise<boolean> {
   try {
+    clearSessionValidationCache();
     const hash = hashToken(refreshToken);
     await pool.query(
       "UPDATE user_sessions SET is_revoked = TRUE WHERE refresh_token_hash = $1",
@@ -387,6 +394,7 @@ export async function revokeSessionByRefreshToken(refreshToken: string): Promise
  */
 export async function revokeAllUserSessions(userId: string): Promise<boolean> {
   try {
+    clearSessionValidationCache();
     await pool.query("UPDATE user_sessions SET is_revoked = TRUE WHERE user_id = $1", [userId]);
     return true;
   } catch (err) {

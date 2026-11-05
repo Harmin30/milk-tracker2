@@ -21,31 +21,33 @@ export async function GET(req: Request) {
       );
     }
 
-    const result = await pool.query(
-      `
-  SELECT
-    milk_type,
-    SUM(liters) as total_liters,
-    SUM(liters * price_per_liter) as total_amount
-  FROM milk_entries
-  WHERE user_id = $1
-    AND EXTRACT(YEAR FROM date) = $2
-    AND EXTRACT(MONTH FROM date) = $3
-  GROUP BY milk_type
-  `,
-      [user.userId, year, month],
-    );
-
-    const rateResult = await pool.query(
-      `
-  SELECT milk_type, price_per_liter
-  FROM milk_entries
-  WHERE user_id = $1
-    AND EXTRACT(YEAR FROM date) = $2
-    AND EXTRACT(MONTH FROM date) = $3
-  `,
-      [user.userId, year, month],
-    );
+    // Fetch grouped totals and rates in parallel to cut database roundtrip latency
+    const [result, rateResult] = await Promise.all([
+      pool.query(
+        `
+        SELECT
+          milk_type,
+          SUM(liters) as total_liters,
+          SUM(liters * price_per_liter) as total_amount
+        FROM milk_entries
+        WHERE user_id = $1
+          AND EXTRACT(YEAR FROM date) = $2
+          AND EXTRACT(MONTH FROM date) = $3
+        GROUP BY milk_type
+        `,
+        [user.userId, year, month],
+      ),
+      pool.query(
+        `
+        SELECT milk_type, price_per_liter
+        FROM milk_entries
+        WHERE user_id = $1
+          AND EXTRACT(YEAR FROM date) = $2
+          AND EXTRACT(MONTH FROM date) = $3
+        `,
+        [user.userId, year, month],
+      ),
+    ]);
 
     let cow_liters = 0;
     let buffalo_liters = 0;

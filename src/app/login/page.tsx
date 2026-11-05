@@ -8,6 +8,7 @@ export default function Login() {
   const [remember, setRemember] = useState(true);
   const router = useRouter();
 
+  const [authState, setAuthState] = useState<"checking" | "authenticated" | "unauthenticated">("checking");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -37,11 +38,16 @@ export default function Login() {
         if (res.ok) {
           const data = await res.json();
           if (isMounted && data.authenticated) {
+            setAuthState("authenticated");
             router.replace("/dashboard");
+            return;
           }
         }
       } catch {
         // Ignore offline / network error on login screen
+      }
+      if (isMounted) {
+        setAuthState("unauthenticated");
       }
     }
 
@@ -143,6 +149,24 @@ export default function Login() {
 
     // Redirect to dashboard
     router.push("/dashboard");
+  }
+
+  // Branded loading screen while verifying session to prevent form flashing
+  if (authState !== "unauthenticated") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50/90 text-slate-900">
+        <div className="flex flex-col items-center space-y-4 animate-in fade-in duration-200">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+            <i className="fa-solid fa-droplet text-2xl"></i>
+          </div>
+          <div className="text-center space-y-1">
+            <h2 className="text-base font-bold text-slate-800">Milk Tracker</h2>
+            <p className="text-xs text-slate-400 font-medium">Verifying session...</p>
+          </div>
+          <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mt-2"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
